@@ -295,7 +295,7 @@ static NSString *const kTableColumnImageShortName = @"ImageShortName";
 
 - (void)handleResult {
     if (self.isFileDone && self.isStringDone) {
-        NSArray *keys = [[ResourceFileSearcher sharedObject].resNameInfoDict allKeys];
+        NSArray *keys = [[[ResourceFileSearcher sharedObject].resNameInfoDict allKeys] sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
         for (NSString *key in keys) {
             if (![[ResourceStringSearcher sharedObject] containResourceName:key]) {
                 [self.unusedResults addObject:[ResourceFileSearcher sharedObject].resNameInfoDict[key]];

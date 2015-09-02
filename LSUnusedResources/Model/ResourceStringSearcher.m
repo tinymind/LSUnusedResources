@@ -78,6 +78,7 @@ typedef NS_ENUM(NSUInteger, LSFileType) {
         [self handleFilesAtPath:self.projectPath];
         
         dispatch_async(dispatch_get_main_queue(), ^{
+            self.isRunning = NO;
             [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationResourceStringQueryDone object:nil userInfo:nil];
         });
     });
@@ -122,26 +123,26 @@ typedef NS_ENUM(NSUInteger, LSFileType) {
     NSInteger groupIndex = -1;
     switch (fileType) {
         case LSFileTypeObjC:
-            pattern = @"@\"(\\w+)\"";//@"imageNamed:@\"(.+)\"";//or: (imageNamed|contentOfFile):@\"(.*)\" // http://www.raywenderlich.com/30288/nsregularexpression-tutorial-and-cheat-sheet
+            pattern = @"@\"(\\S+)\"";//@"imageNamed:@\"(.+)\"";//or: (imageNamed|contentOfFile):@\"(.*)\" // http://www.raywenderlich.com/30288/nsregularexpression-tutorial-and-cheat-sheet
             groupIndex = 1;
             break;
         case LSFileTypeSwift:
-            pattern = @"named:\"(\\w+)\"";//UIImage(named:"xx")
+            pattern = @"named:\"(\\S+)\"";//UIImage(named:"xx")
             groupIndex = 1;
             break;
         case LSFileTypeXib:
-            pattern = @"image name=\"(\\w+)\"";//image name="xx"
+            pattern = @"image name=\"(\\S+)\"";//image name="xx"
             groupIndex = 1;
             break;
         case LSFileTypeHtml:
-            pattern = @"img\\s+src=\"(\\w+)\"";//<img src="xx">
+            pattern = @"img\\s+src=\"(\\S+)\"";//<img src="xx">
             groupIndex = 1;
             break;
         case LSFileTypeCSS:
-        case LSFileTypePlist://*.png
+        case LSFileTypePlist:
         case LSFileTypeH:
         case LSFileTypeC:
-            pattern = @"(\\w+)\\.(png|gif|jpg|jpeg)";
+            pattern = @"(\\S+)\\.(png|gif|jpg|jpeg)";//*.png
             groupIndex = 1;
             break;
         default:
@@ -162,6 +163,7 @@ typedef NS_ENUM(NSUInteger, LSFileType) {
         NSMutableArray *list = [NSMutableArray array];
         for (NSTextCheckingResult *checkingResult in matchs) {
             NSString *res = [content substringWithRange:[checkingResult rangeAtIndex:index]];
+            res = [res lastPathComponent];
             res = [StringUtils stringByRemoveResourceSuffix:res];
             [list addObject:res];
         }

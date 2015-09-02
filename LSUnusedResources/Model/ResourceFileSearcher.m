@@ -11,11 +11,11 @@
 
 NSString * const kNotificationResourceFileQueryDone = @"kNotificationResourceFileQueryDone";
 
-static NSString * const kSuffixImageSet = @"imageset";
+static NSString * const kSuffixImageSet    = @"imageset";
 static NSString * const kSuffixLaunchImage = @"launchimage";
-static NSString * const kSuffixAppIcon = @"appiconset";
-static NSString * const kSuffixBundle = @"bundle";
-static NSString * const kSuffixPng = @"png";
+static NSString * const kSuffixAppIcon     = @"appiconset";
+static NSString * const kSuffixBundle      = @"bundle";
+static NSString * const kSuffixPng         = @"png";
 
 
 @implementation ResourceFileInfo
@@ -110,6 +110,7 @@ static NSString * const kSuffixPng = @"png";
         
         dispatch_async(dispatch_get_main_queue(), ^{
             self.resNameInfoDict = tempResNameInfoDict;
+            self.isRunning = NO;
             [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationResourceFileQueryDone object:nil userInfo:nil];
         });
     });
