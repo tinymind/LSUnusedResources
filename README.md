@@ -15,7 +15,7 @@ It's an useful utility tool to check what resources are not being used in your X
 
 ## Installation
 
-* Download: [LSUnusedResources.app.zip](https://github.com/tinymind/LSUnusedResources/Release/LSUnusedResources.app.zip)
+* Download: [LSUnusedResources.app.zip](https://github.com/tinymind/LSUnusedResources/raw/master/Release/LSUnusedResources.app.zip)
 * Or build and run the project using XCode.
 
 ## Requirements
