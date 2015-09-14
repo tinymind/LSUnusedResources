@@ -18,33 +18,33 @@ static NSString *const kTableColumnImageShortName = @"ImageShortName";
 @interface MainViewController () <NSTableViewDelegate, NSTableViewDataSource>
 
 // Project
-@property (strong, nonatomic) IBOutlet NSButton *browseButton;
-@property (strong, nonatomic) IBOutlet NSTextField *pathTextField;
+@property (weak) IBOutlet NSButton *browseButton;
+@property (weak) IBOutlet NSTextField *pathTextField;
 
 // Settings
 @property (weak) IBOutlet NSTextField *resSuffixTextField;
 
-@property (strong, nonatomic) IBOutlet NSButton *headerCheckbox;
-@property (strong, nonatomic) IBOutlet NSButton *mCheckbox;
-@property (strong, nonatomic) IBOutlet NSButton *mmCheckbox;
-@property (strong, nonatomic) IBOutlet NSButton *cppCheckbox;
-@property (strong, nonatomic) IBOutlet NSButton *swiftCheckbox;
+@property (weak) IBOutlet NSButton *headerCheckbox;
+@property (weak) IBOutlet NSButton *mCheckbox;
+@property (weak) IBOutlet NSButton *mmCheckbox;
+@property (weak) IBOutlet NSButton *cppCheckbox;
+@property (weak) IBOutlet NSButton *swiftCheckbox;
 
-@property (strong, nonatomic) IBOutlet NSButton *htmlCheckbox;
-@property (strong, nonatomic) IBOutlet NSButton *cssCheckbox;
-@property (strong, nonatomic) IBOutlet NSButton *plistCheckbox;
-@property (strong, nonatomic) IBOutlet NSButton *xibCheckbox;
-@property (strong, nonatomic) IBOutlet NSButton *sbCheckbox;
+@property (weak) IBOutlet NSButton *htmlCheckbox;
+@property (weak) IBOutlet NSButton *cssCheckbox;
+@property (weak) IBOutlet NSButton *plistCheckbox;
+@property (weak) IBOutlet NSButton *xibCheckbox;
+@property (weak) IBOutlet NSButton *sbCheckbox;
 
 @property (weak) IBOutlet NSButton *ignoreSimilarCheckbox;
 
 // Result
-@property (strong, nonatomic) IBOutlet NSTableView *resultsTableView;
-@property (strong, nonatomic) IBOutlet NSProgressIndicator *processIndicator;
-@property (strong, nonatomic) IBOutlet NSTextField *statusLabel;
+@property (weak) IBOutlet NSTableView *resultsTableView;
+@property (weak) IBOutlet NSProgressIndicator *processIndicator;
+@property (weak) IBOutlet NSTextField *statusLabel;
 
-@property (strong, nonatomic) IBOutlet NSButton *searchButton;
-@property (strong, nonatomic) IBOutlet NSButton *exportButton;
+@property (weak) IBOutlet NSButton *searchButton;
+@property (weak) IBOutlet NSButton *exportButton;
 
 @property (strong, nonatomic) NSMutableArray *unusedResults;
 @property (assign, nonatomic) BOOL isFileDone;
