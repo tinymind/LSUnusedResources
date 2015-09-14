@@ -11,7 +11,6 @@
 
 NSString * const kNotificationResourceStringQueryDone = @"kNotificationResourceStringQueryDone";
 
-
 typedef NS_ENUM(NSUInteger, LSFileType) {
     LSFileTypeNone  = 0,
     LSFileTypeH     = 1,
@@ -66,8 +65,55 @@ typedef NS_ENUM(NSUInteger, LSFileType) {
     [self.resStringSet removeAllObjects];
 }
 
-- (BOOL)containResourceName:(NSString *)name {
+- (BOOL)containsResourceName:(NSString *)name {
     return [self.resStringSet containsObject:name];
+}
+
+- (BOOL)containsSimilarResourceName:(NSString *)name {
+    NSString *regexStr = @"(\\d+)";
+    NSRegularExpression* regexExpression = [NSRegularExpression regularExpressionWithPattern:regexStr options:NSRegularExpressionCaseInsensitive error:nil];
+    NSArray* matchs = [regexExpression matchesInString:name options:0 range:NSMakeRange(0, name.length)];
+    if (matchs != nil && [matchs count] == 1) {
+        NSTextCheckingResult *checkingResult = [matchs objectAtIndex:0];
+        NSRange numberRange = [checkingResult rangeAtIndex:1];
+        
+        NSString *prefix = nil;
+        NSString *suffix = nil;
+        
+        BOOL hasSamePrefix = NO;
+        BOOL hasSameSuffix = NO;
+        
+        if (numberRange.location != 0) {
+            prefix = [name substringToIndex:numberRange.location];
+        } else {
+            hasSamePrefix = YES;
+        }
+        
+        if (numberRange.location + numberRange.length < name.length) {
+            suffix = [name substringFromIndex:numberRange.location + numberRange.length];
+        } else {
+            hasSameSuffix = YES;
+        }
+        
+        for (NSString *res in self.resStringSet) {
+            if (hasSameSuffix && !hasSamePrefix) {
+                if ([res hasPrefix:prefix]) {
+                    return YES;
+                }
+            }
+            if (hasSamePrefix && !hasSameSuffix) {
+                if ([res hasSuffix:suffix]) {
+                    return YES;
+                }
+            }
+            if (!hasSamePrefix && !hasSameSuffix) {
+                if ([res hasPrefix:prefix] && [res hasSuffix:suffix]) {
+                    return YES;
+                }
+            }
+        }
+    }
+    return NO;
 }
 
 #pragma mark - Private

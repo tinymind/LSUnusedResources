@@ -7,14 +7,14 @@
 	<key>IDESourceControlProjectIdentifier</key>
 	<string>52EAF6A4-A3B4-4A60-BE78-0FEDC32A0E51</string>
 	<key>IDESourceControlProjectName</key>
-	<string>project</string>
+	<string>LSUnusedResources</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
 		<key>BCE88D68C38567EBAA7175543E46FAAECE159481</key>
 		<string>https://github.com/tinymind/LSUnusedResources</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
-	<string>LSUnusedResources.xcodeproj/project.xcworkspace</string>
+	<string>LSUnusedResources.xcodeproj</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
 		<key>BCE88D68C38567EBAA7175543E46FAAECE159481</key>

@@ -20,6 +20,15 @@ extern NSString * const kNotificationResourceStringQueryDone;
 - (void)startWithProjectPath:(NSString *)projectPath fileSuffixs:(NSArray *)fileSuffixs;
 - (void)reset;
 
-- (BOOL)containResourceName:(NSString *)name;
+- (BOOL)containsResourceName:(NSString *)name;
+
+/**
+ *  If resource name is: icon_tag_1, and using in code by "icon_tag_%d", return YES.
+ *
+ *  @param name resource name
+ *
+ *  @return BOOL
+ */
+- (BOOL)containsSimilarResourceName:(NSString *)name;
 
 @end

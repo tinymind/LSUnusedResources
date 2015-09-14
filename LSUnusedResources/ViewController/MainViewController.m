@@ -36,6 +36,8 @@ static NSString *const kTableColumnImageShortName = @"ImageShortName";
 @property (strong, nonatomic) IBOutlet NSButton *xibCheckbox;
 @property (strong, nonatomic) IBOutlet NSButton *sbCheckbox;
 
+@property (weak) IBOutlet NSButton *ignoreSimilarCheckbox;
+
 // Result
 @property (strong, nonatomic) IBOutlet NSTableView *resultsTableView;
 @property (strong, nonatomic) IBOutlet NSProgressIndicator *processIndicator;
@@ -162,12 +164,12 @@ static NSString *const kTableColumnImageShortName = @"ImageShortName";
 
 - (void)onResourceFileQueryDone:(NSNotification *)notification {
     self.isFileDone = YES;
-    [self handleResult];
+    [self searchUnusedResources];
 }
 
 - (void)onResourceStringQueryDone:(NSNotification *)notification {
     self.isStringDone = YES;
-    [self handleResult];
+    [self searchUnusedResources];
 }
 
 
@@ -287,18 +289,23 @@ static NSString *const kTableColumnImageShortName = @"ImageShortName";
     [_plistCheckbox setEnabled:state];
     [_cssCheckbox setEnabled:state];
     [_swiftCheckbox setEnabled:state];
+    
+    [_ignoreSimilarCheckbox setEnabled:state];
 
     [_searchButton setEnabled:state];
     [_exportButton setHidden:!state];
     [_processIndicator setHidden:state];
 }
 
-- (void)handleResult {
+- (void)searchUnusedResources {
     if (self.isFileDone && self.isStringDone) {
-        NSArray *keys = [[[ResourceFileSearcher sharedObject].resNameInfoDict allKeys] sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
-        for (NSString *key in keys) {
-            if (![[ResourceStringSearcher sharedObject] containResourceName:key]) {
-                [self.unusedResults addObject:[ResourceFileSearcher sharedObject].resNameInfoDict[key]];
+        NSArray *resNames = [[[ResourceFileSearcher sharedObject].resNameInfoDict allKeys] sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
+        for (NSString *name in resNames) {
+            if (![[ResourceStringSearcher sharedObject] containsResourceName:name]) {
+                if (!self.ignoreSimilarCheckbox.state
+                    || ![[ResourceStringSearcher sharedObject] containsSimilarResourceName:name]) {
+                    [self.unusedResults addObject:[ResourceFileSearcher sharedObject].resNameInfoDict[name]];
+                }
             }
         }
         
