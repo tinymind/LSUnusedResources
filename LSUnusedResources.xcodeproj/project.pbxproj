@@ -387,6 +387,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = LSUnusedResources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -398,6 +399,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = LSUnusedResources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

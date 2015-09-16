@@ -10,10 +10,10 @@
 #import "ResourceFileSearcher.h"
 #import "ResourceStringSearcher.h"
 
-static NSString * const kDefaultResourceSuffixs = @"imageset;jpg;gif;png";
 // Constant strings
-static NSString *const kTableColumnImageIcon = @"ImageIcon";
-static NSString *const kTableColumnImageShortName = @"ImageShortName";
+static NSString * const kDefaultResourceSuffixs    = @"imageset;jpg;gif;png";
+static NSString * const kTableColumnImageIcon      = @"ImageIcon";
+static NSString * const kTableColumnImageShortName = @"ImageShortName";
 
 @interface MainViewController () <NSTableViewDelegate, NSTableViewDataSource>
 

@@ -23,7 +23,7 @@ extern NSString * const kNotificationResourceStringQueryDone;
 - (BOOL)containsResourceName:(NSString *)name;
 
 /**
- *  If resource name is: icon_tag_1, and using in code by "icon_tag_%d", return YES.
+ *  If resource name is: "icon_tag_1.png", and using in code by "icon_tag_%d", this resource is used with a similar name.
  *
  *  @param name resource name
  *
