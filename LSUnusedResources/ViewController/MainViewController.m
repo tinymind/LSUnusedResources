@@ -35,6 +35,7 @@ static NSString * const kTableColumnImageShortName = @"ImageShortName";
 @property (weak) IBOutlet NSButton *plistCheckbox;
 @property (weak) IBOutlet NSButton *xibCheckbox;
 @property (weak) IBOutlet NSButton *sbCheckbox;
+@property (weak) IBOutlet NSButton *jsonCheckbox;
 
 @property (weak) IBOutlet NSButton *ignoreSimilarCheckbox;
 
@@ -127,6 +128,7 @@ static NSString * const kTableColumnImageShortName = @"ImageShortName";
         return ;
     }
     NSArray *fileSuffixs = [self includeFileSuffixs];
+    
     [[ResourceFileSearcher sharedObject] startWithProjectPath:projectPath resourceSuffixs:resourceSuffixs];
     [[ResourceStringSearcher sharedObject] startWithProjectPath:projectPath fileSuffixs:fileSuffixs];
 }
@@ -238,9 +240,11 @@ static NSString * const kTableColumnImageShortName = @"ImageShortName";
     if ([self.swiftCheckbox state]) {
         [suffixs addObject:@"swift"];
     }
-    
     if ([self.htmlCheckbox state]) {
         [suffixs addObject:@"html"];
+    }
+    if ([self.jsonCheckbox state]) {
+        [suffixs addObject:@"json"];
     }
     if ([self.plistCheckbox state]) {
         [suffixs addObject:@"plist"];
@@ -286,6 +290,7 @@ static NSString * const kTableColumnImageShortName = @"ImageShortName";
     [_mmCheckbox setEnabled:state];
     [_headerCheckbox setEnabled:state];
     [_htmlCheckbox setEnabled:state];
+    [_jsonCheckbox setEnabled:state];
     [_plistCheckbox setEnabled:state];
     [_cssCheckbox setEnabled:state];
     [_swiftCheckbox setEnabled:state];
