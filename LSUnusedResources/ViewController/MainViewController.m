@@ -46,6 +46,7 @@ static NSString * const kTableColumnImageShortName = @"ImageShortName";
 
 @property (weak) IBOutlet NSButton *searchButton;
 @property (weak) IBOutlet NSButton *exportButton;
+@property (weak) IBOutlet NSButton *deleteButton;
 
 @property (strong, nonatomic) NSMutableArray *unusedResults;
 @property (assign, nonatomic) BOOL isFileDone;
@@ -54,6 +55,7 @@ static NSString * const kTableColumnImageShortName = @"ImageShortName";
 - (IBAction)onBrowseButtonClicked:(id)sender;
 - (IBAction)onSearchButtonClicked:(id)sender;
 - (IBAction)onExportButtonClicked:(id)sender;
+- (IBAction)onDeleteButtonClicked:(id)sender;
 
 @end
 
@@ -70,6 +72,8 @@ static NSString * const kTableColumnImageShortName = @"ImageShortName";
     // Setup double click
     self.unusedResults = [NSMutableArray array];
     [self.resultsTableView setDoubleAction:@selector(tableViewDoubleClicked)];
+    self.resultsTableView.allowsEmptySelection = YES;
+    self.resultsTableView.allowsMultipleSelection = YES;
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onResourceFileQueryDone:) name:kNotificationResourceFileQueryDone object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onResourceStringQueryDone:) name:kNotificationResourceStringQueryDone object:nil];
@@ -162,6 +166,30 @@ static NSString * const kTableColumnImageShortName = @"ImageShortName";
     }
 }
 
+- (IBAction)onDeleteButtonClicked:(id)sender {
+    if (self.resultsTableView.numberOfSelectedRows > 0) {
+        NSLog(@"selected rows count:%ld", self.resultsTableView.numberOfSelectedRows);
+        
+        __block NSError *error;
+        
+        __block NSArray *results = [self.unusedResults copy];
+        [self.resultsTableView.selectedRowIndexes enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL * _Nonnull stop) {
+            ResourceFileInfo *info = [results objectAtIndex:idx];
+            [[NSFileManager defaultManager] removeItemAtURL:[NSURL fileURLWithPath:info.path] error:&error];
+            if (error) {
+                NSLog(@"File deletion error:%@", [error description]);
+                *stop = YES;
+            }else{
+                [self.resultsTableView beginUpdates];
+                NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex:idx];
+                [self.resultsTableView removeRowsAtIndexes:indexSet withAnimation:NSTableViewAnimationSlideUp];
+                [self.unusedResults removeObject:info];
+                [self.resultsTableView endUpdates];
+            }
+        }];
+    }
+}
+
 #pragma mark - NSNotification
 
 - (void)onResourceFileQueryDone:(NSNotification *)notification {
@@ -198,7 +226,7 @@ static NSString * const kTableColumnImageShortName = @"ImageShortName";
 - (void)tableViewDoubleClicked {
     // Open finder
     ResourceFileInfo *info = [self.unusedResults objectAtIndex:[self.resultsTableView clickedRow]];
-    [[NSWorkspace sharedWorkspace] selectFile:info.path inFileViewerRootedAtPath:nil];
+    [[NSWorkspace sharedWorkspace] selectFile:info.path inFileViewerRootedAtPath:@""];
 }
 
 #pragma mark - Private
@@ -299,6 +327,8 @@ static NSString * const kTableColumnImageShortName = @"ImageShortName";
 
     [_searchButton setEnabled:state];
     [_exportButton setHidden:!state];
+    [_deleteButton setEnabled:state];
+    [_deleteButton setHidden:!state];
     [_processIndicator setHidden:state];
 }
 
