@@ -92,7 +92,7 @@ static NSString * const kTableColumnImageShortName = @"ImageShortName";
     BOOL okButtonPressed = ([openPanel runModal] == NSModalResponseOK);
     if (okButtonPressed) {
         // Update the path text field
-        NSString *path = [[openPanel directoryURL] path];
+        NSString *path = [[openPanel URL] path];
         [self.pathTextField setStringValue:path];
     }
 }
