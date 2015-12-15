@@ -1000,7 +1000,7 @@
                                 <font key="titleFont" metaFont="system"/>
                             </box>
                             <button verticalHuggingPriority="750" id="d2Z-MZ-XC6">
-                                <rect key="frame" x="3" y="3" width="96" height="32"/>
+                                <rect key="frame" x="4" y="3" width="94" height="32"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <animations/>
                                 <buttonCell key="cell" type="push" title="Search" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="cUV-ux-EjC">
@@ -1024,8 +1024,8 @@
                                 </connections>
                             </button>
                             <button hidden="YES" verticalHuggingPriority="750" id="q84-1O-TmH">
-                                <rect key="frame" x="364" y="3" width="82" height="32"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <rect key="frame" x="350" y="3" width="94" height="32"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                                 <buttonCell key="cell" type="push" title="Delete" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Cgc-bZ-CHo">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -1035,12 +1035,12 @@
                                 </connections>
                             </button>
                             <progressIndicator hidden="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" id="N6r-4n-Mu1">
-                                <rect key="frame" x="104" y="12" width="16" height="16"/>
+                                <rect key="frame" x="94" y="12" width="16" height="16"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <animations/>
                             </progressIndicator>
                             <textField verticalHuggingPriority="750" id="T1v-qi-uUW">
-                                <rect key="frame" x="126" y="12" width="238" height="17"/>
+                                <rect key="frame" x="110" y="12" width="238" height="17"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <animations/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" id="emm-3c-l2S">

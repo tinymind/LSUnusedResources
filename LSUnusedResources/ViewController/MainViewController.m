@@ -168,25 +168,24 @@ static NSString * const kTableColumnImageShortName = @"ImageShortName";
 
 - (IBAction)onDeleteButtonClicked:(id)sender {
     if (self.resultsTableView.numberOfSelectedRows > 0) {
-        NSLog(@"selected rows count:%ld", self.resultsTableView.numberOfSelectedRows);
-        
-        __block NSError *error;
-        
-        __block NSArray *results = [self.unusedResults copy];
-        [self.resultsTableView.selectedRowIndexes enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL * _Nonnull stop) {
-            ResourceFileInfo *info = [results objectAtIndex:idx];
-            [[NSFileManager defaultManager] removeItemAtURL:[NSURL fileURLWithPath:info.path] error:&error];
-            if (error) {
-                NSLog(@"File deletion error:%@", [error description]);
-                *stop = YES;
-            }else{
-                [self.resultsTableView beginUpdates];
-                NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex:idx];
-                [self.resultsTableView removeRowsAtIndexes:indexSet withAnimation:NSTableViewAnimationSlideUp];
-                [self.unusedResults removeObject:info];
-                [self.resultsTableView endUpdates];
+        NSArray *results = [self.unusedResults copy];
+        NSIndexSet *selectedIndexSet = self.resultsTableView.selectedRowIndexes;
+        NSUInteger index = [selectedIndexSet firstIndex];
+        while (index != NSNotFound) {
+            if (index < results.count) {
+                ResourceFileInfo *info = [results objectAtIndex:index];
+                [[NSFileManager defaultManager] removeItemAtURL:[NSURL fileURLWithPath:info.path] error:nil];
             }
-        }];
+            index = [selectedIndexSet indexGreaterThanIndex:index];
+        }
+        
+        [self.unusedResults removeObjectsAtIndexes:selectedIndexSet];
+        [self.resultsTableView reloadData];
+        [self updateUnusedResultsCount];
+    } else {
+        NSAlert *alert = [[NSAlert alloc] init];
+        [alert setMessageText:@"Please select first."];
+        [alert runModal];
     }
 }
 
@@ -278,7 +277,7 @@ static NSString * const kTableColumnImageShortName = @"ImageShortName";
         [suffixs addObject:@"plist"];
     }
     if ([self.cssCheckbox state]) {
-        [suffixs addObject:@"plist"];
+        [suffixs addObject:@"css"];
     }
     if ([self.xibCheckbox state]) {
         [suffixs addObject:@"xib"];
@@ -296,10 +295,7 @@ static NSString * const kTableColumnImageShortName = @"ImageShortName";
 - (void)setUIEnabled:(BOOL)state {
     // Individual
     if (state) {
-        [self.processIndicator stopAnimation:self];
-        NSUInteger count = self.unusedResults.count;
-        NSString *tips = count > 2 ? @"resources" : @"resource";
-        self.statusLabel.stringValue = [NSString stringWithFormat:@"%d unsued %@.", (int)count, tips];
+        [self updateUnusedResultsCount];
     } else {
         [self.processIndicator startAnimation:self];
         self.statusLabel.stringValue = @"Searching...";
@@ -330,6 +326,13 @@ static NSString * const kTableColumnImageShortName = @"ImageShortName";
     [_deleteButton setEnabled:state];
     [_deleteButton setHidden:!state];
     [_processIndicator setHidden:state];
+}
+
+- (void)updateUnusedResultsCount {
+    [self.processIndicator stopAnimation:self];
+    NSUInteger count = self.unusedResults.count;
+    NSString *tips = count > 2 ? @"resources" : @"resource";
+    self.statusLabel.stringValue = [NSString stringWithFormat:@"%d unsued %@.", (int)count, tips];
 }
 
 - (void)searchUnusedResources {
