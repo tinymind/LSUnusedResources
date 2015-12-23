@@ -29,6 +29,7 @@ typedef NS_ENUM(NSUInteger, LSFileType) {
 
 @property (strong, nonatomic) NSMutableSet *resStringSet;
 @property (strong, nonatomic) NSString *projectPath;
+@property (strong, nonatomic) NSArray *resSuffixs;
 @property (strong, nonatomic) NSArray *fileSuffixs;
 @property (assign, nonatomic) BOOL isRunning;
 
@@ -46,7 +47,7 @@ typedef NS_ENUM(NSUInteger, LSFileType) {
     return _sharedInstance;
 }
 
-- (void)startWithProjectPath:(NSString *)projectPath fileSuffixs:(NSArray *)fileSuffixs {
+- (void)startWithProjectPath:(NSString *)projectPath resourceSuffixs:(NSArray *)resourceSuffixs fileSuffixs:(NSArray *)fileSuffixs {
     if (self.isRunning) {
         return;
     }
@@ -56,6 +57,7 @@ typedef NS_ENUM(NSUInteger, LSFileType) {
     
     self.isRunning = YES;
     self.projectPath = projectPath;
+    self.resSuffixs = resourceSuffixs;
     self.fileSuffixs = fileSuffixs;
     
     [self runSearchTask];
@@ -193,7 +195,7 @@ typedef NS_ENUM(NSUInteger, LSFileType) {
         case LSFileTypePlist:
         case LSFileTypeH:
         case LSFileTypeC:
-            pattern = @"(\\S+)\\.(png|gif|jpg|jpeg)";//*.png
+            pattern = [NSString stringWithFormat:@"([a-zA-Z0-9_-]+)\\.(%@)", self.resSuffixs.count ? [self.resSuffixs componentsJoinedByString:@"|"] : @"png|gif|jpg|jpeg"]; //*.(png|gif|jpg|jpeg)
             groupIndex = 1;
             break;
         default:

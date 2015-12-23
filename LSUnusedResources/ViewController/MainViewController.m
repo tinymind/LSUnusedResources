@@ -134,7 +134,7 @@ static NSString * const kTableColumnImageShortName = @"ImageShortName";
     NSArray *fileSuffixs = [self includeFileSuffixs];
     
     [[ResourceFileSearcher sharedObject] startWithProjectPath:projectPath resourceSuffixs:resourceSuffixs];
-    [[ResourceStringSearcher sharedObject] startWithProjectPath:projectPath fileSuffixs:fileSuffixs];
+    [[ResourceStringSearcher sharedObject] startWithProjectPath:projectPath resourceSuffixs:resourceSuffixs fileSuffixs:fileSuffixs];
 }
 
 - (IBAction)onExportButtonClicked:(id)sender {
