@@ -176,7 +176,7 @@ typedef NS_ENUM(NSUInteger, LSFileType) {
             groupIndex = 1;
             break;
         case LSFileTypeSwift:
-            pattern = @"named:\"(\\S+)\"";//UIImage(named:"xx")
+            pattern = @"named:\\s*\"(\\S+)\"";//UIImage(named:"xx") or UIImage(named: "xx")
             groupIndex = 1;
             break;
         case LSFileTypeXib:
