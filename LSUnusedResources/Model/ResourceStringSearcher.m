@@ -172,23 +172,23 @@ typedef NS_ENUM(NSUInteger, LSFileType) {
     NSInteger groupIndex = -1;
     switch (fileType) {
         case LSFileTypeObjC:
-            pattern = @"@\"(\\S+)\"";//@"imageNamed:@\"(.+)\"";//or: (imageNamed|contentOfFile):@\"(.*)\" // http://www.raywenderlich.com/30288/nsregularexpression-tutorial-and-cheat-sheet
+            pattern = @"@\"(.+?)\"";//@"imageNamed:@\"(.+)\"";//or: (imageNamed|contentOfFile):@\"(.*)\" // http://www.raywenderlich.com/30288/nsregularexpression-tutorial-and-cheat-sheet
             groupIndex = 1;
             break;
         case LSFileTypeSwift:
-            pattern = @"named:\\s*\"(\\S+)\"";//UIImage(named:"xx") or UIImage(named: "xx")
+            pattern = @"named:\\s*\"(.+?)\"";//UIImage(named:"xx") or UIImage(named: "xx")
             groupIndex = 1;
             break;
         case LSFileTypeXib:
-            pattern = @"image name=\"(\\S+)\"";//image name="xx"
+            pattern = @"image name=\"(.+?)\"";//image name="xx"
             groupIndex = 1;
             break;
         case LSFileTypeHtml:
-            pattern = @"img\\s+src=\"(\\S+)\"";//<img src="xx">
+            pattern = @"img\\s+src=\"(.+?)\"";//<img src="xx">
             groupIndex = 1;
             break;
         case LSFileTypeJson:
-            pattern = @":\\s+\"(\\S+)\"";//"xx"
+            pattern = @":\\s+\"(.+?)\"";//"xx"
             groupIndex = 1;
             break;
         case LSFileTypeCSS:
