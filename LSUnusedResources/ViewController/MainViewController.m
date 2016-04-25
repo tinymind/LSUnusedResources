@@ -219,9 +219,9 @@ static NSString * const kTableColumnFileSize = @"FileSize";
     } else if ([columnIdentifier isEqualToString:kTableColumnImageShortName]) {
         return info.name;
     }else if ([columnIdentifier isEqualToString:kTableColumnFileSize]) {
-        NSString *fileSize = @"N\\A";
+        NSString *fileSize = @"NA";
         if (!info.isDir) {
-            fileSize = @(info.fileSize/1024.).stringValue;
+            fileSize = [NSString stringWithFormat:@"%.1fKB", info.fileSize/1024.];
         }
         return fileSize;
     }
