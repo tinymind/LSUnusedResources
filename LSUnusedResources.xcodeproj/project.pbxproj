@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		114E8C711CCDC31B00434D1C /* LSFileUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 114E8C701CCDC31B00434D1C /* LSFileUtils.m */; };
 		B1313CAC1B942827001CD7CF /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = B1313CAB1B942827001CD7CF /* AppDelegate.m */; };
 		B1313CAE1B942827001CD7CF /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B1313CAD1B942827001CD7CF /* main.m */; };
 		B1313CC21B942828001CD7CF /* LSUnusedResourcesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B1313CC11B942828001CD7CF /* LSUnusedResourcesTests.m */; };
@@ -29,6 +30,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		114E8C6F1CCDC31B00434D1C /* LSFileUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFileUtils.h; sourceTree = "<group>"; };
+		114E8C701CCDC31B00434D1C /* LSFileUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFileUtils.m; sourceTree = "<group>"; };
 		B1313CA51B942827001CD7CF /* LSUnusedResources.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LSUnusedResources.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B1313CA91B942827001CD7CF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B1313CAA1B942827001CD7CF /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -133,6 +136,8 @@
 				B19D81821B9451540097E947 /* ResourceStringSearcher.m */,
 				B19D81841B959BDB0097E947 /* StringUtils.h */,
 				B19D81851B959BDB0097E947 /* StringUtils.m */,
+				114E8C6F1CCDC31B00434D1C /* LSFileUtils.h */,
+				114E8C701CCDC31B00434D1C /* LSFileUtils.m */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -265,6 +270,7 @@
 				B1313CAE1B942827001CD7CF /* main.m in Sources */,
 				B1313CAC1B942827001CD7CF /* AppDelegate.m in Sources */,
 				B19D81801B9451320097E947 /* ResourceFileSearcher.m in Sources */,
+				114E8C711CCDC31B00434D1C /* LSFileUtils.m in Sources */,
 				B19D81831B9451550097E947 /* ResourceStringSearcher.m in Sources */,
 				B19D81861B959BDB0097E947 /* StringUtils.m in Sources */,
 				B1313CD51B943075001CD7CF /* MainViewController.m in Sources */,

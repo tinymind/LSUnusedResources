@@ -14,6 +14,7 @@
 static NSString * const kDefaultResourceSuffixs    = @"imageset;jpg;gif;png";
 static NSString * const kTableColumnImageIcon      = @"ImageIcon";
 static NSString * const kTableColumnImageShortName = @"ImageShortName";
+static NSString * const kTableColumnFileSize = @"FileSize";
 
 @interface MainViewController () <NSTableViewDelegate, NSTableViewDataSource>
 
@@ -217,6 +218,12 @@ static NSString * const kTableColumnImageShortName = @"ImageShortName";
         return [info image];
     } else if ([columnIdentifier isEqualToString:kTableColumnImageShortName]) {
         return info.name;
+    }else if ([columnIdentifier isEqualToString:kTableColumnFileSize]) {
+        NSString *fileSize = @"N\\A";
+        if (!info.isDir) {
+            fileSize = @(info.fileSize/1024.).stringValue;
+        }
+        return fileSize;
     }
     
     return info.path;
