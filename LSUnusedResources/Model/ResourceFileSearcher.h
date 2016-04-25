@@ -16,7 +16,8 @@ extern NSString * const kNotificationResourceFileQueryDone;
 
 @property (strong, nonatomic) NSString *name;
 @property (strong, nonatomic) NSString *path;
-
+@property (assign, nonatomic) BOOL isDir;
+@property (assign, nonatomic) uint64_t fileSize;
 - (NSImage *)image;
 
 @end

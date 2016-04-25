@@ -8,6 +8,7 @@
 
 #import "ResourceFileSearcher.h"
 #import "StringUtils.h"
+#import "LSFileUtils.h"
 
 NSString * const kNotificationResourceFileQueryDone = @"kNotificationResourceFileQueryDone";
 
@@ -101,9 +102,12 @@ static NSString * const kSuffixPng         = @"png";
             NSString *keyName = [StringUtils stringByRemoveResourceSuffix:name];
 
             if (!tempResNameInfoDict[keyName]) {
+                BOOL isDir = NO;
                 ResourceFileInfo *info = [ResourceFileInfo new];
                 info.name = name;
                 info.path = path;
+                info.fileSize = [LSFileUtils fileSizeAtPath:path isDir:&isDir];
+                info.isDir = isDir;
                 tempResNameInfoDict[keyName] = info;
             }
         }
