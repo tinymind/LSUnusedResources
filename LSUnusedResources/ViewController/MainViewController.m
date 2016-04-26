@@ -14,13 +14,14 @@
 static NSString * const kDefaultResourceSuffixs    = @"imageset;jpg;gif;png";
 static NSString * const kTableColumnImageIcon      = @"ImageIcon";
 static NSString * const kTableColumnImageShortName = @"ImageShortName";
-static NSString * const kTableColumnFileSize = @"FileSize";
+static NSString * const kTableColumnFileSize       = @"FileSize";
 
 @interface MainViewController () <NSTableViewDelegate, NSTableViewDataSource>
 
 // Project
 @property (weak) IBOutlet NSButton *browseButton;
 @property (weak) IBOutlet NSTextField *pathTextField;
+@property (weak) IBOutlet NSTextField *excludeFolderTextField;
 
 // Settings
 @property (weak) IBOutlet NSTextField *resSuffixTextField;
@@ -52,6 +53,7 @@ static NSString * const kTableColumnFileSize = @"FileSize";
 @property (strong, nonatomic) NSMutableArray *unusedResults;
 @property (assign, nonatomic) BOOL isFileDone;
 @property (assign, nonatomic) BOOL isStringDone;
+@property (strong, nonatomic) NSDate *startTime;
 
 - (IBAction)onBrowseButtonClicked:(id)sender;
 - (IBAction)onSearchButtonClicked:(id)sender;
@@ -117,6 +119,8 @@ static NSString * const kTableColumnFileSize = @"FileSize";
         return;
     }
     
+    self.startTime = [NSDate date];
+    
     // Reset
     [[ResourceFileSearcher sharedObject] reset];
     [[ResourceStringSearcher sharedObject] reset];
@@ -133,9 +137,10 @@ static NSString * const kTableColumnFileSize = @"FileSize";
         return ;
     }
     NSArray *fileSuffixs = [self includeFileSuffixs];
+    NSArray *excludeFolders = self.excludeFolderTextField.stringValue.length ? [self.excludeFolderTextField.stringValue componentsSeparatedByString:@";"] : nil;
     
-    [[ResourceFileSearcher sharedObject] startWithProjectPath:projectPath resourceSuffixs:resourceSuffixs];
-    [[ResourceStringSearcher sharedObject] startWithProjectPath:projectPath resourceSuffixs:resourceSuffixs fileSuffixs:fileSuffixs];
+    [[ResourceFileSearcher sharedObject] startWithProjectPath:projectPath excludeFolders:excludeFolders resourceSuffixs:resourceSuffixs];
+    [[ResourceStringSearcher sharedObject] startWithProjectPath:projectPath excludeFolders:excludeFolders resourceSuffixs:resourceSuffixs fileSuffixs:fileSuffixs];
 }
 
 - (IBAction)onExportButtonClicked:(id)sender {
@@ -194,16 +199,16 @@ static NSString * const kTableColumnFileSize = @"FileSize";
 
 - (void)onResourceFileQueryDone:(NSNotification *)notification {
     self.isFileDone = YES;
-    [self searchUnusedResources];
+    [self searchUnusedResourcesIfNeeded];
 }
 
 - (void)onResourceStringQueryDone:(NSNotification *)notification {
     self.isStringDone = YES;
-    [self searchUnusedResources];
+    [self searchUnusedResourcesIfNeeded];
 }
 
-
 #pragma mark - <NSTableViewDelegate>
+
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView {
     return [self.unusedResults count];
 }
@@ -218,12 +223,8 @@ static NSString * const kTableColumnFileSize = @"FileSize";
         return [info image];
     } else if ([columnIdentifier isEqualToString:kTableColumnImageShortName]) {
         return info.name;
-    }else if ([columnIdentifier isEqualToString:kTableColumnFileSize]) {
-        NSString *fileSize = @"NA";
-        if (!info.isDir) {
-            fileSize = [NSString stringWithFormat:@"%.1fKB", info.fileSize/1024.];
-        }
-        return fileSize;
+    } else if ([columnIdentifier isEqualToString:kTableColumnFileSize]) {
+        return [NSString stringWithFormat:@"%.2f", info.fileSize / 1024.0];
     }
     
     return info.path;
@@ -313,6 +314,7 @@ static NSString * const kTableColumnFileSize = @"FileSize";
     [_browseButton setEnabled:state];
     [_resSuffixTextField setEnabled:state];
     [_pathTextField setEnabled:state];
+    [_excludeFolderTextField setEnabled:state];
     
     [_mCheckbox setEnabled:state];
     [_xibCheckbox setEnabled:state];
@@ -339,10 +341,20 @@ static NSString * const kTableColumnFileSize = @"FileSize";
     [self.processIndicator stopAnimation:self];
     NSUInteger count = self.unusedResults.count;
     NSString *tips = count > 2 ? @"resources" : @"resource";
-    self.statusLabel.stringValue = [NSString stringWithFormat:@"%d unsued %@.", (int)count, tips];
+    NSTimeInterval time = [[NSDate date] timeIntervalSinceDate:self.startTime];
+    self.statusLabel.stringValue = [NSString stringWithFormat:@"%ld unsued %@. time %.2fs", (long)count, tips, time];
 }
 
-- (void)searchUnusedResources {
+- (void)searchUnusedResourcesIfNeeded {
+    NSString *tips = @"Searching...";
+    if (self.isFileDone) {
+        tips = [tips stringByAppendingString:[NSString stringWithFormat:@"%ld resources", [[ResourceFileSearcher sharedObject].resNameInfoDict allKeys].count]];
+    }
+    if (self.isStringDone) {
+        tips = [tips stringByAppendingString:[NSString stringWithFormat:@"%ld strings", [ResourceStringSearcher sharedObject].resStringSet .count]];
+    }
+    self.statusLabel.stringValue = tips;
+    
     if (self.isFileDone && self.isStringDone) {
         NSArray *resNames = [[[ResourceFileSearcher sharedObject].resNameInfoDict allKeys] sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
         for (NSString *name in resNames) {

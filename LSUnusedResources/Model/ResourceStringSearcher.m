@@ -31,6 +31,7 @@ typedef NS_ENUM(NSUInteger, LSFileType) {
 @property (strong, nonatomic) NSString *projectPath;
 @property (strong, nonatomic) NSArray *resSuffixs;
 @property (strong, nonatomic) NSArray *fileSuffixs;
+@property (strong, nonatomic) NSArray *excludeFolders;
 @property (assign, nonatomic) BOOL isRunning;
 
 @end
@@ -47,7 +48,7 @@ typedef NS_ENUM(NSUInteger, LSFileType) {
     return _sharedInstance;
 }
 
-- (void)startWithProjectPath:(NSString *)projectPath resourceSuffixs:(NSArray *)resourceSuffixs fileSuffixs:(NSArray *)fileSuffixs {
+- (void)startWithProjectPath:(NSString *)projectPath excludeFolders:(NSArray *)excludeFolders resourceSuffixs:(NSArray *)resourceSuffixs fileSuffixs:(NSArray *)fileSuffixs {
     if (self.isRunning) {
         return;
     }
@@ -59,6 +60,7 @@ typedef NS_ENUM(NSUInteger, LSFileType) {
     self.projectPath = projectPath;
     self.resSuffixs = resourceSuffixs;
     self.fileSuffixs = fileSuffixs;
+    self.excludeFolders = excludeFolders;
     
     [self runSearchTask];
 }
@@ -144,6 +146,9 @@ typedef NS_ENUM(NSUInteger, LSFileType) {
     
     for (NSString *file in files) {
         if ([file hasPrefix:@"."]) {
+            continue;
+        }
+        if ([self.excludeFolders containsObject:file]) {
             continue;
         }
         

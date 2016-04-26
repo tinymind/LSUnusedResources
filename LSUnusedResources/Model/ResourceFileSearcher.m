@@ -47,8 +47,6 @@ static NSString * const kSuffixPng         = @"png";
 
 @interface ResourceFileSearcher ()
 
-@property (strong, nonatomic) NSString *projectPath;
-@property (strong, nonatomic) NSArray *resSuffixs;
 @property (assign, nonatomic) BOOL isRunning;
 @property (strong, nonatomic) NSMutableDictionary *resNameInfoDict;
 @end
@@ -66,7 +64,7 @@ static NSString * const kSuffixPng         = @"png";
 }
 
 
-- (void)startWithProjectPath:(NSString *)projectPath resourceSuffixs:(NSArray *)resourceSuffixs {
+- (void)startWithProjectPath:(NSString *)projectPath excludeFolders:(NSArray *)excludeFolders resourceSuffixs:(NSArray *)resourceSuffixs {
     if (self.isRunning) {
         return;
     }
@@ -75,10 +73,8 @@ static NSString * const kSuffixPng         = @"png";
     }
     
     self.isRunning = YES;
-    self.projectPath = projectPath;
-    self.resSuffixs = resourceSuffixs;
     
-    [self scanResourceFile];
+    [self scanResourceFileWithProjectPath:projectPath excludeFolders:excludeFolders resourceSuffixs:resourceSuffixs];
 }
 
 - (void)reset {
@@ -88,9 +84,9 @@ static NSString * const kSuffixPng         = @"png";
 
 #pragma mark - Private
 
-- (void)scanResourceFile {
+- (void)scanResourceFileWithProjectPath:(NSString *)projectPath excludeFolders:(NSArray *)excludeFolders resourceSuffixs:(NSArray *)resourceSuffixs {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        NSArray *resPaths = [self resourceFilesInDirectory:self.projectPath withSuffixs:self.resSuffixs];
+        NSArray *resPaths = [self resourceFilesInDirectory:projectPath excludeFolders:excludeFolders resourceSuffixs:resourceSuffixs];
         
         NSMutableDictionary *tempResNameInfoDict = [NSMutableDictionary dictionary];
         for (NSString *path in resPaths) {
@@ -120,13 +116,13 @@ static NSString * const kSuffixPng         = @"png";
     });
 }
 
-- (NSArray *)resourceFilesInDirectory:(NSString *)directoryPath withSuffixs:(NSArray *)suffixs {
+- (NSArray *)resourceFilesInDirectory:(NSString *)directoryPath excludeFolders:(NSArray *)excludeFolders resourceSuffixs:(NSArray *)suffixs {
     
     NSMutableArray *resources = [NSMutableArray array];
     
     for (NSString *fileType in suffixs) {
         // list of path<NSString>
-        NSArray *pathList = [self searchDirectory:directoryPath forFiletype:fileType];
+        NSArray *pathList = [self searchDirectory:directoryPath excludeFolders:excludeFolders forFiletype:fileType];
         if (pathList.count) {
             if (![fileType isEqualTo:kSuffixPng]) {
                 [resources addObjectsFromArray:pathList];
@@ -137,26 +133,49 @@ static NSString * const kSuffixPng         = @"png";
                         && [path rangeOfString:kSuffixBundle].location == NSNotFound
                         && [path rangeOfString:kSuffixAppIcon].location == NSNotFound
                         && [path rangeOfString:kSuffixLaunchImage].location == NSNotFound) {
-                        [resources addObject:path];
+                            [resources addObject:path];
                     }
                 }
             }
         }
     }
     
+//    // list of path<NSString>
+//    NSArray *pathList = [self searchDirectory:directoryPath excludeFolders:excludeFolders forFiletypes:suffixs];
+//    if (pathList.count) {
+//        for (NSString *path in pathList) {
+//            // if the resource file is not in xxx/xxx.imageset/; xx/LaunchImage.launchimage; xx/AppIcon.appiconset
+//            if (![path hasPrefix:kSuffixPng]) {
+//                [resources addObjectsFromArray:pathList];
+//            } else if ([path rangeOfString:kSuffixImageSet].location == NSNotFound
+//                && [path rangeOfString:kSuffixBundle].location == NSNotFound
+//                && [path rangeOfString:kSuffixAppIcon].location == NSNotFound
+//                && [path rangeOfString:kSuffixLaunchImage].location == NSNotFound) {
+//                [resources addObject:path];
+//            }
+//        }
+//    }
+    
     return resources;
 }
 
-- (NSArray *)searchDirectory:(NSString *)directoryPath forFiletype:(NSString *)filetype {
+- (NSArray *)searchDirectory:(NSString *)directoryPath excludeFolders:(NSArray *)excludeFolders forFiletype:(NSString *)filetype {
     // Create a find task
     NSTask *task = [[NSTask alloc] init];
     [task setLaunchPath: @"/usr/bin/find"];
     
-    // Search for all png files
-    NSArray *argvals = @[directoryPath,
-                         @"-name",
-                         [NSString stringWithFormat:@"*.%@", filetype]
-                        ];
+    // Search for all files
+    NSMutableArray *argvals = [NSMutableArray array];
+    [argvals addObject:directoryPath];
+    [argvals addObject:@"-name"];
+    [argvals addObject:[NSString stringWithFormat:@"*.%@", filetype]];
+    
+    for (NSString *folder in excludeFolders) {
+        [argvals addObject:@"!"];
+        [argvals addObject:@"-path"];
+        [argvals addObject:[NSString stringWithFormat:@"*/%@/*", folder]];
+    }
+    
     [task setArguments: argvals];
     
     NSPipe *pipe = [NSPipe pipe];
@@ -168,15 +187,56 @@ static NSString * const kSuffixPng         = @"png";
     
     // Read the response
     NSData *data = [file readDataToEndOfFile];
-    NSString *string = [[NSString alloc] initWithData: data encoding: NSUTF8StringEncoding];
+    NSString *string = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
     
     // See if we can create a lines array
-    if (string.length > 1) {
+    if (string.length) {
         NSArray *lines = [string componentsSeparatedByString:@"\n"];
         return lines;
     }
     return nil;
 }
 
+// Toooooo Sloooooow
+- (NSArray *)searchDirectory:(NSString *)directoryPath excludeFolders:(NSArray *)excludeFolders forFiletypes:(NSArray *)filetypes {
+    // find -E . -iregex ".*\.(html|plist)" ! -path "*/Movies/*" ! -path "*/Downloads/*" ! -path "*/Music/*"
+    // Create a find task
+    NSTask *task = [[NSTask alloc] init];
+    [task setLaunchPath: @"/usr/bin/find"];
+    
+    // Search for all files
+    NSMutableArray *argvals = [NSMutableArray array];
+    [argvals addObject:@"-E"];
+    [argvals addObject:directoryPath];
+    [argvals addObject:@"-iregex"];
+    
+    [argvals addObject:[NSString stringWithFormat:@".*\\.(%@)", [filetypes componentsJoinedByString:@"|"]]];
+    
+    for (NSString *folder in excludeFolders) {
+        [argvals addObject:@"!"];
+        [argvals addObject:@"-path"];
+        [argvals addObject:[NSString stringWithFormat:@"*/%@/*", folder]];
+    }
+    
+    [task setArguments: argvals];
+    
+    NSPipe *pipe = [NSPipe pipe];
+    [task setStandardOutput: pipe];
+    NSFileHandle *file = [pipe fileHandleForReading];
+    
+    // Run task
+    [task launch];
+    
+    // Read the response
+    NSData *data = [file readDataToEndOfFile];
+    NSString *string = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    
+    // See if we can create a lines array
+    if (string.length) {
+        NSArray *lines = [string componentsSeparatedByString:@"\n"];
+        return lines;
+    }
+    return nil;
+}
 
 @end

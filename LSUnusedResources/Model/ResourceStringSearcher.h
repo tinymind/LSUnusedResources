@@ -17,7 +17,7 @@ extern NSString * const kNotificationResourceStringQueryDone;
 
 + (instancetype)sharedObject;
 
-- (void)startWithProjectPath:(NSString *)projectPath resourceSuffixs:(NSArray *)resourceSuffixs fileSuffixs:(NSArray *)fileSuffixs;
+- (void)startWithProjectPath:(NSString *)projectPath excludeFolders:(NSArray *)excludeFolders resourceSuffixs:(NSArray *)resourceSuffixs fileSuffixs:(NSArray *)fileSuffixs;
 - (void)reset;
 
 - (BOOL)containsResourceName:(NSString *)name;

@@ -18,6 +18,7 @@ extern NSString * const kNotificationResourceFileQueryDone;
 @property (strong, nonatomic) NSString *path;
 @property (assign, nonatomic) BOOL isDir;
 @property (assign, nonatomic) uint64_t fileSize;
+
 - (NSImage *)image;
 
 @end
@@ -29,7 +30,7 @@ extern NSString * const kNotificationResourceFileQueryDone;
 
 + (instancetype)sharedObject;
 
-- (void)startWithProjectPath:(NSString *)projectPath resourceSuffixs:(NSArray *)resourceSuffixs;
+- (void)startWithProjectPath:(NSString *)projectPath excludeFolders:(NSArray *)excludeFolders resourceSuffixs:(NSArray *)resourceSuffixs;
 - (void)reset;
 
 @end
