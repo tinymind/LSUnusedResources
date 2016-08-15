@@ -71,7 +71,15 @@ typedef NS_ENUM(NSUInteger, LSFileType) {
 }
 
 - (BOOL)containsResourceName:(NSString *)name {
-    return [self.resStringSet containsObject:name];
+    if ([self.resStringSet containsObject:name]) {
+        return YES;
+    } else {
+        if ([name pathExtension]) {
+            NSString *nameWithoutSuffix = [StringUtils stringByRemoveResourceSuffix:name];
+            return [self.resStringSet containsObject:nameWithoutSuffix];
+        }
+    }
+    return NO;
 }
 
 - (BOOL)containsSimilarResourceName:(NSString *)name {
@@ -181,7 +189,7 @@ typedef NS_ENUM(NSUInteger, LSFileType) {
             groupIndex = 1;
             break;
         case LSFileTypeSwift:
-            pattern = @"named:\\s*\"(.+?)\"";//UIImage(named:"xx") or UIImage(named: "xx")
+            pattern = @"\"(.+?)\"";//@"named:\\s*\"(.+?)\"";//UIImage(named:"xx") or UIImage(named: "xx")
             groupIndex = 1;
             break;
         case LSFileTypeXib:
@@ -196,8 +204,11 @@ typedef NS_ENUM(NSUInteger, LSFileType) {
             pattern = @":\\s+\"(.+?)\"";//"xx"
             groupIndex = 1;
             break;
-        case LSFileTypeCSS:
         case LSFileTypePlist:
+            pattern = @">(.+?)<";//"<string>xx</string>"
+            groupIndex = 1;
+            break;
+        case LSFileTypeCSS:
         case LSFileTypeH:
         case LSFileTypeC:
             pattern = [NSString stringWithFormat:@"([a-zA-Z0-9_-]+)\\.(%@)", self.resSuffixs.count ? [self.resSuffixs componentsJoinedByString:@"|"] : @"png|gif|jpg|jpeg"]; //*.(png|gif|jpg|jpeg)
@@ -222,7 +233,7 @@ typedef NS_ENUM(NSUInteger, LSFileType) {
         for (NSTextCheckingResult *checkingResult in matchs) {
             NSString *res = [content substringWithRange:[checkingResult rangeAtIndex:index]];
             res = [res lastPathComponent];
-            res = [StringUtils stringByRemoveResourceSuffix:res];
+//            res = [StringUtils stringByRemoveResourceSuffix:res];
             [list addObject:res];
         }
         return list;
