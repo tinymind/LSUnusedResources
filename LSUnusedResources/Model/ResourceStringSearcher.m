@@ -233,7 +233,7 @@ typedef NS_ENUM(NSUInteger, LSFileType) {
         for (NSTextCheckingResult *checkingResult in matchs) {
             NSString *res = [content substringWithRange:[checkingResult rangeAtIndex:index]];
             res = [res lastPathComponent];
-//            res = [StringUtils stringByRemoveResourceSuffix:res];
+            res = [StringUtils stringByRemoveResourceSuffix:res];
             [list addObject:res];
         }
         return list;

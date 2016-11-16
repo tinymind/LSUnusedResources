@@ -9,6 +9,7 @@
 #import "MainViewController.h"
 #import "ResourceFileSearcher.h"
 #import "ResourceStringSearcher.h"
+#import "StringUtils.h"
 
 // Constant strings
 static NSString * const kDefaultResourceSuffixs    = @"imageset;jpg;gif;png";
@@ -54,11 +55,6 @@ static NSString * const kTableColumnFileSize       = @"FileSize";
 @property (assign, nonatomic) BOOL isFileDone;
 @property (assign, nonatomic) BOOL isStringDone;
 @property (strong, nonatomic) NSDate *startTime;
-
-- (IBAction)onBrowseButtonClicked:(id)sender;
-- (IBAction)onSearchButtonClicked:(id)sender;
-- (IBAction)onExportButtonClicked:(id)sender;
-- (IBAction)onDeleteButtonClicked:(id)sender;
 
 @end
 
@@ -361,7 +357,13 @@ static NSString * const kTableColumnFileSize       = @"FileSize";
             if (![[ResourceStringSearcher sharedObject] containsResourceName:name]) {
                 if (!self.ignoreSimilarCheckbox.state
                     || ![[ResourceStringSearcher sharedObject] containsSimilarResourceName:name]) {
-                    [self.unusedResults addObject:[ResourceFileSearcher sharedObject].resNameInfoDict[name]];
+                    //TODO: if imageset name is A but contains png with name B, and using as B, should ignore A.imageset
+                    
+                    ResourceFileInfo *resInfo = [ResourceFileSearcher sharedObject].resNameInfoDict[name];
+                    if (!resInfo.isDir
+                        || ![self usingResWithDiffrentDirName:resInfo]) {
+                        [self.unusedResults addObject:resInfo];
+                    }
                 }
             }
         }
@@ -370,6 +372,30 @@ static NSString * const kTableColumnFileSize       = @"FileSize";
         
         [self setUIEnabled:YES];
     }
+}
+
+- (BOOL)usingResWithDiffrentDirName:(ResourceFileInfo *)resInfo
+{
+    if (!resInfo.isDir) {
+        return NO;
+    }
+    NSDirectoryEnumerator *fileEnumerator = [[NSFileManager defaultManager] enumeratorAtPath:resInfo.path];
+    for (NSString *fileName in fileEnumerator) {
+        if (![StringUtils isImageTypeWithName:fileName]) {
+            continue;
+        }
+        
+        NSString *fileNameWithoutExt = [StringUtils stringByRemoveResourceSuffix:fileName];
+        
+        if ([fileNameWithoutExt isEqualToString:resInfo.name]) {
+            return NO;
+        }
+        
+        if ([[ResourceStringSearcher sharedObject] containsResourceName:fileNameWithoutExt]) {
+            return YES;
+        }
+    }
+    return NO;
 }
 
 @end

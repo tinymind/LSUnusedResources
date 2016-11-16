@@ -715,7 +715,7 @@
                                     <button verticalHuggingPriority="750" id="K2U-Ys-vXw">
                                         <rect key="frame" x="440" y="25" width="94" height="32"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
-                                        <buttonCell key="cell" type="push" title="Browse.." bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="PMh-w7-GaI">
+                                        <buttonCell key="cell" type="push" title="Browse..." bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="PMh-w7-GaI">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="system"/>
                                         </buttonCell>

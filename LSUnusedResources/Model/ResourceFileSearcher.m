@@ -128,12 +128,12 @@ static NSString * const kSuffixPng         = @"png";
                 [resources addObjectsFromArray:pathList];
             } else {
                 for (NSString *path in pathList) {
-                    // if the resource file is not in xxx/xxx.imageset/; xx/LaunchImage.launchimage; xx/AppIcon.appiconset
+                    // if the png file is not in xxx/xxx.imageset/; xx/LaunchImage.launchimage; xx/AppIcon.appiconset
                     if ([path rangeOfString:kSuffixImageSet].location == NSNotFound
                         && [path rangeOfString:kSuffixBundle].location == NSNotFound
                         && [path rangeOfString:kSuffixAppIcon].location == NSNotFound
                         && [path rangeOfString:kSuffixLaunchImage].location == NSNotFound) {
-                            [resources addObject:path];
+                        [resources addObject:path];
                     }
                 }
             }
