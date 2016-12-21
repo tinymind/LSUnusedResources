@@ -185,11 +185,11 @@ typedef NS_ENUM(NSUInteger, LSFileType) {
     NSInteger groupIndex = -1;
     switch (fileType) {
         case LSFileTypeObjC:
-            pattern = @"@\"(.+?)\"";//@"imageNamed:@\"(.+)\"";//or: (imageNamed|contentOfFile):@\"(.*)\" // http://www.raywenderlich.com/30288/nsregularexpression-tutorial-and-cheat-sheet
+            pattern = @"@\"\"|@\"(.+?)\"";//@"imageNamed:@\"(.+)\"";//or: (imageNamed|contentOfFile):@\"(.*)\" // http://www.raywenderlich.com/30288/nsregularexpression-tutorial-and-cheat-sheet
             groupIndex = 1;
             break;
         case LSFileTypeSwift:
-            pattern = @"\"(.+?)\"";//@"named:\\s*\"(.+?)\"";//UIImage(named:"xx") or UIImage(named: "xx")
+            pattern = @"\"\"|\"(.+?)\"";//@"named:\\s*\"(.+?)\"";//UIImage(named:"xx") or UIImage(named: "xx")
             groupIndex = 1;
             break;
         case LSFileTypeXib:
@@ -231,6 +231,10 @@ typedef NS_ENUM(NSUInteger, LSFileType) {
     if (matchs.count) {
         NSMutableArray *list = [NSMutableArray array];
         for (NSTextCheckingResult *checkingResult in matchs) {
+            NSString *tempRes = [content substringWithRange:[checkingResult rangeAtIndex:0]];
+            if ([tempRes isEqualToString:@"@\"\""] || [tempRes isEqualToString:@"\"\""]) {
+                continue;
+            }
             NSString *res = [content substringWithRange:[checkingResult rangeAtIndex:index]];
             res = [res lastPathComponent];
             res = [StringUtils stringByRemoveResourceSuffix:res];
