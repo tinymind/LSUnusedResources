@@ -17,7 +17,9 @@ static NSString * const kTableColumnImageIcon      = @"ImageIcon";
 static NSString * const kTableColumnImageShortName = @"ImageShortName";
 static NSString * const kTableColumnFileSize       = @"FileSize";
 
-@interface MainViewController () <NSTableViewDelegate, NSTableViewDataSource>
+@interface MainViewController () <NSTableViewDelegate, NSTableViewDataSource>{
+    BOOL _fileSizeDesc;//文件大小按降序排列
+}
 
 // Project
 @property (weak) IBOutlet NSButton *browseButton;
@@ -196,11 +198,27 @@ static NSString * const kTableColumnFileSize       = @"FileSize";
 - (void)onResourceFileQueryDone:(NSNotification *)notification {
     self.isFileDone = YES;
     [self searchUnusedResourcesIfNeeded];
+    //统计总数
+    if(self.unusedResults.count > 0){
+        uint64_t countSize = 0;
+        for(ResourceFileInfo *info in self.unusedResults){
+            countSize += info.fileSize;
+        }
+        self.statusLabel.stringValue = [self.statusLabel.stringValue stringByAppendingString:[NSString stringWithFormat:@",total size is:%.2f(KB)", countSize / 1024.0]];
+    }
 }
 
 - (void)onResourceStringQueryDone:(NSNotification *)notification {
     self.isStringDone = YES;
     [self searchUnusedResourcesIfNeeded];
+    //统计总数
+    if(self.unusedResults.count > 0){
+        uint64_t countSize = 0;
+        for(ResourceFileInfo *info in self.unusedResults){
+            countSize += info.fileSize;
+        }
+        self.statusLabel.stringValue = [self.statusLabel.stringValue stringByAppendingString:[NSString stringWithFormat:@",total size is:%.2f(KB)", countSize / 1024.0]];
+    }
 }
 
 #pragma mark - <NSTableViewDelegate>
@@ -230,6 +248,33 @@ static NSString * const kTableColumnFileSize       = @"FileSize";
     // Open finder
     ResourceFileInfo *info = [self.unusedResults objectAtIndex:[self.resultsTableView clickedRow]];
     [[NSWorkspace sharedWorkspace] selectFile:info.path inFileViewerRootedAtPath:@""];
+}
+
+- (void)tableView:(NSTableView *)tableView mouseDownInHeaderOfTableColumn:(NSTableColumn *)tableColumn{
+    if([tableColumn.identifier isEqualToString:@"FileSize"]){
+        //点击FileSize头部
+        _fileSizeDesc = !_fileSizeDesc;
+        if(_fileSizeDesc){
+            //降序
+            NSArray *array = [self.unusedResults sortedArrayUsingComparator:^NSComparisonResult(ResourceFileInfo *obj1, ResourceFileInfo *obj2) {
+                return obj1.fileSize < obj2.fileSize;
+            }];
+            self.unusedResults = [array mutableCopy];
+            [self.resultsTableView reloadData];
+        }else{
+            NSArray *array = [self.unusedResults sortedArrayUsingComparator:^NSComparisonResult(ResourceFileInfo *obj1, ResourceFileInfo *obj2) {
+                return obj1.fileSize > obj2.fileSize;
+            }];
+            self.unusedResults = [array mutableCopy];
+            [self.resultsTableView reloadData];
+        }
+    }else if([tableColumn.identifier isEqualToString:@"ImageShortName"]){
+        NSArray *array = [self.unusedResults sortedArrayUsingComparator:^NSComparisonResult(ResourceFileInfo *obj1, ResourceFileInfo *obj2) {
+            return [obj1.name compare:obj2.name];
+        }];
+        self.unusedResults = [array mutableCopy];
+        [self.resultsTableView reloadData];
+    }
 }
 
 #pragma mark - Private
