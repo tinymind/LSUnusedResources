@@ -41,6 +41,7 @@ static NSString * const kTableColumnFileSize       = @"FileSize";
 @property (weak) IBOutlet NSButton *xibCheckbox;
 @property (weak) IBOutlet NSButton *sbCheckbox;
 @property (weak) IBOutlet NSButton *jsonCheckbox;
+@property (weak) IBOutlet NSButton *javaScriptCheckbox;
 
 @property (weak) IBOutlet NSButton *ignoreSimilarCheckbox;
 
@@ -320,6 +321,9 @@ static NSString * const kTableColumnFileSize       = @"FileSize";
     if ([self.sbCheckbox state]) {
         [suffixs addObject:@"storyboard"];
     }
+    if ([self.javaScriptCheckbox state]) {
+        [suffixs addObject:@"js"];
+    }
     
     if (suffixs.count == 0) {
         [suffixs addObject:@"m"];
@@ -351,6 +355,7 @@ static NSString * const kTableColumnFileSize       = @"FileSize";
     [_headerCheckbox setEnabled:state];
     [_htmlCheckbox setEnabled:state];
     [_jsonCheckbox setEnabled:state];
+    [_javaScriptCheckbox setEnabled:state];
     [_plistCheckbox setEnabled:state];
     [_cssCheckbox setEnabled:state];
     [_swiftCheckbox setEnabled:state];

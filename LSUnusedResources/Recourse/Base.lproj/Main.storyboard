@@ -1,8 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="11201" systemVersion="15G31" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" initialViewController="B8D-0N-5wS">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="11762" systemVersion="16D32" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" initialViewController="B8D-0N-5wS">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11201"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11762"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
         <!--Application-->
@@ -645,7 +646,7 @@
                 <customObject id="Voe-Tx-rLC" customClass="AppDelegate"/>
                 <customObject id="Ady-hI-5gd" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="75" y="0.0"/>
+            <point key="canvasLocation" x="345" y="-103"/>
         </scene>
         <!--Window Controller-->
         <scene sceneID="R2V-B0-nI4">
@@ -664,7 +665,7 @@
                 </windowController>
                 <customObject id="Oky-zY-oP4" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="93" y="399"/>
+            <point key="canvasLocation" x="368" y="302"/>
         </scene>
         <!--Main View Controller-->
         <scene sceneID="hIz-AP-VOD">
@@ -881,8 +882,16 @@
                                             <font key="font" metaFont="system"/>
                                         </buttonCell>
                                     </button>
+                                    <button misplaced="YES" id="Pb6-bK-hu7" userLabel="JavaScript Checkbox">
+                                        <rect key="frame" x="422" y="36" width="120" height="18"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <buttonCell key="cell" type="check" title=".js" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="Pz8-by-ofv" userLabel=".javascript">
+                                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                            <font key="font" metaFont="system"/>
+                                        </buttonCell>
+                                    </button>
                                     <button misplaced="YES" id="DXV-iK-pT8">
-                                        <rect key="frame" x="402" y="65" width="60" height="18"/>
+                                        <rect key="frame" x="422" y="65" width="60" height="18"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <buttonCell key="cell" type="check" title=".json" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="OFI-ad-LRu">
                                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -895,11 +904,11 @@
                                 <rect key="frame" x="10" y="40" width="520" height="284"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <clipView key="contentView" id="sUG-kO-lfb">
-                                    <rect key="frame" x="1" y="0.0" width="518" height="283"/>
+                                    <rect key="frame" x="1" y="0.0" width="518" height="268"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" headerView="DQk-C7-ykG" id="Yqh-sW-D2a">
-                                            <rect key="frame" x="0.0" y="0.0" width="1286" height="260"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="1286" height="245"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <size key="intercellSpacing" width="3" height="2"/>
                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -962,7 +971,7 @@
                                     </subviews>
                                 </clipView>
                                 <scroller key="horizontalScroller" verticalHuggingPriority="750" horizontal="YES" id="zEY-KI-pAy">
-                                    <rect key="frame" x="1" y="267" width="518" height="16"/>
+                                    <rect key="frame" x="1" y="268" width="518" height="15"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                                 <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="KkO-YP-zyT">
@@ -1045,6 +1054,7 @@
                         <outlet property="headerCheckbox" destination="YpA-SJ-IRd" id="94A-NH-54r"/>
                         <outlet property="htmlCheckbox" destination="Ap8-HE-32k" id="ivY-qq-Mam"/>
                         <outlet property="ignoreSimilarCheckbox" destination="ty7-Lh-GkV" id="FCe-je-vQk"/>
+                        <outlet property="javaScriptCheckbox" destination="Pb6-bK-hu7" id="43O-2j-bRY"/>
                         <outlet property="jsonCheckbox" destination="DXV-iK-pT8" id="Vge-f8-Qtl"/>
                         <outlet property="mCheckbox" destination="9Nb-Td-UP4" id="hQT-Zb-axU"/>
                         <outlet property="mmCheckbox" destination="gRh-xT-XgN" id="BJY-YH-Zsq"/>
@@ -1062,7 +1072,7 @@
                 </viewController>
                 <customObject id="rPt-NT-nkU" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="93" y="1213"/>
+            <point key="canvasLocation" x="271" y="1036"/>
         </scene>
     </scenes>
 </document>
