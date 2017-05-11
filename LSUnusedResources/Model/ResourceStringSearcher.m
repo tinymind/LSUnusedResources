@@ -12,18 +12,18 @@
 NSString * const kNotificationResourceStringQueryDone = @"kNotificationResourceStringQueryDone";
 
 typedef NS_ENUM(NSUInteger, LSFileType) {
-    LSFileTypeNone   = 0,
-    LSFileTypeH      = 1,
-    LSFileTypeObjC   = 2,
-    LSFileTypeC      = 3,
-    LSFileTypeSwift  = 4,
-    LSFileTypeHtml   = 5,
-    LSFileTypeCSS    = 6,
-    LSFileTypeXib    = 7,
-    LSFileTypePlist  = 8,
-    LSFileTypeJson   = 9,
-    LSFileTypeJs     = 10,
-    LSFileTypeStings = 11
+    LSFileTypeNone    = 0,
+    LSFileTypeH       = 1,
+    LSFileTypeObjC    = 2,
+    LSFileTypeC       = 3,
+    LSFileTypeSwift   = 4,
+    LSFileTypeHtml    = 5,
+    LSFileTypeCSS     = 6,
+    LSFileTypeXib     = 7,
+    LSFileTypePlist   = 8,
+    LSFileTypeJson    = 9,
+    LSFileTypeJs      = 10,
+    LSFileTypeStrings = 11
 };
 
 
@@ -220,7 +220,7 @@ typedef NS_ENUM(NSUInteger, LSFileType) {
             pattern = [NSString stringWithFormat:@"([a-zA-Z0-9_-]+)\\.(%@)", self.resSuffixs.count ? [self.resSuffixs componentsJoinedByString:@"|"] : @"png|gif|jpg|jpeg"]; //*.(png|gif|jpg|jpeg)
             groupIndex = 1;
             break;
-        case LSFileTypeStings:
+        case LSFileTypeStrings:
             pattern = @"=\\s*\"(.+)\"\\s*;";
             groupIndex = 1;
             break;
@@ -293,7 +293,7 @@ typedef NS_ENUM(NSUInteger, LSFileType) {
         return LSFileTypeCSS;
     }
     if ([ext isEqualTo:@"strings"]) {
-        return LSFileTypeStings;
+        return LSFileTypeStrings;
     }
     
     return LSFileTypeNone;
