@@ -11,29 +11,32 @@
 
 NSString * const kNotificationResourceStringQueryDone = @"kNotificationResourceStringQueryDone";
 
-typedef NS_ENUM(NSUInteger, LSFileType) {
-    LSFileTypeNone    = 0,
-    LSFileTypeH       = 1,
-    LSFileTypeObjC    = 2,
-    LSFileTypeC       = 3,
-    LSFileTypeSwift   = 4,
-    LSFileTypeHtml    = 5,
-    LSFileTypeCSS     = 6,
-    LSFileTypeXib     = 7,
-    LSFileTypePlist   = 8,
-    LSFileTypeJson    = 9,
-    LSFileTypeJs      = 10,
-    LSFileTypeStrings = 11
-};
+#pragma mark - ResourceStringPattern
 
+@implementation ResourceStringPattern
+
+- (id)initWithDictionary:(NSDictionary *)dict;
+{
+    if (self = [super init]) {
+        _suffix = dict[kPatternIdentifySuffix];
+        _enable = [dict[kPatternIdentifyEnable] boolValue];
+        _regex = dict[kPatternIdentifyRegex];
+        _groupIndex = [dict[kPatternIdentifyGroupIndex] integerValue];
+    }
+    return self;
+}
+
+@end
+
+#pragma mark - ResourceStringSearcher
 
 @interface ResourceStringSearcher ()
 
 @property (strong, nonatomic) NSMutableSet *resStringSet;
 @property (strong, nonatomic) NSString *projectPath;
 @property (strong, nonatomic) NSArray *resSuffixs;
-@property (strong, nonatomic) NSArray *fileSuffixs;
 @property (strong, nonatomic) NSArray *excludeFolders;
+@property (strong, nonatomic) NSMutableDictionary *fileSuffixToResourcePatterns;
 @property (assign, nonatomic) BOOL isRunning;
 
 @end
@@ -50,19 +53,25 @@ typedef NS_ENUM(NSUInteger, LSFileType) {
     return _sharedInstance;
 }
 
-- (void)startWithProjectPath:(NSString *)projectPath excludeFolders:(NSArray *)excludeFolders resourceSuffixs:(NSArray *)resourceSuffixs fileSuffixs:(NSArray *)fileSuffixs {
+- (void)startWithProjectPath:(NSString *)projectPath excludeFolders:(NSArray *)excludeFolders resourceSuffixs:(NSArray *)resourceSuffixs resourcePatterns:(NSArray *)resourcePatterns {
     if (self.isRunning) {
         return;
     }
-    if (projectPath.length == 0 || fileSuffixs.count == 0) {
+    if (projectPath.length == 0 || resourcePatterns.count == 0) {
         return;
     }
     
     self.isRunning = YES;
     self.projectPath = projectPath;
     self.resSuffixs = resourceSuffixs;
-    self.fileSuffixs = fileSuffixs;
     self.excludeFolders = excludeFolders;
+    
+    self.fileSuffixToResourcePatterns = [NSMutableDictionary dictionary];
+    for (NSDictionary *dict in resourcePatterns) {
+        if ([dict[kPatternIdentifyEnable] boolValue]) {
+            [self.fileSuffixToResourcePatterns setObject:dict forKey:dict[kPatternIdentifySuffix]];
+        }
+    }
     
     [self runSearchTask];
 }
@@ -131,6 +140,49 @@ typedef NS_ENUM(NSUInteger, LSFileType) {
     return NO;
 }
 
+- (NSArray *)createDefaultResourcePatternsWithResourceSuffixs:(NSArray *)resSuffixs {
+    NSArray *enables = @[@1, @1, @1, @1, @1, @1, @1, @1, @1, @1, @1, @1, @1, @1];
+    NSArray *fileSuffixs = @[@"h", @"m", @"mm", @"swift", @"xib", @"storyboard", @"strings", @"c", @"cpp", @"html", @"js", @"json", @"plist", @"css"];
+    
+    NSString *cPattern = [NSString stringWithFormat:@"([a-zA-Z0-9_-]+)\\.(%@)", [resSuffixs componentsJoinedByString:@"|"]]; // *.(png|gif|jpg|jpeg)
+    NSString *ojbcPattern = @"@\"(.+?)\""; // @"imageNamed:@\"(.+)\"";//or: (imageNamed|contentOfFile):@\"(.*)\" // http://www.raywenderlich.com/30288/nsregularexpression-tutorial-and-cheat-sheet
+    NSString *xibPattern = @"image name=\"(.+?)\""; // image name="xx"
+    
+    NSArray *filePatterns = @[cPattern,    // .h
+                              ojbcPattern, // .m
+                              ojbcPattern, // .mm
+                              ojbcPattern, // swift.
+                              xibPattern,  // .xib
+                              xibPattern,  // .storyboard
+                              @"=\\s*\"(.+)\"\\s*;",  // .strings
+                              cPattern,    // .c
+                              cPattern,    // .cpp
+                              @"img\\s+src=[\"\'](.+?)[\"\']", // .html, <img src="xx"> <img src='xx'>
+                              @"[\"\']src[\"\'],\\s+[\"\'](.+?)[\"\']", // .js,  "src", "xx"> 'src', 'xx'>
+                              @":\\s+\"(.+?)\"", // .json, "xx"
+                              @">(.+?)<",  // .plist, "<string>xx</string>"
+                              cPattern];   // .css
+    
+    NSArray *matchGroupIndexs = @[@1, @1, @1, @1, @1, @1, @1, @1, @1, @1, @1, @1, @1, @1];
+    
+    NSMutableArray *patterns = [NSMutableArray array];
+    for (NSInteger index = 0; index < fileSuffixs.count; ++ index) {
+        [patterns addObject:@{kPatternIdentifyEnable: enables[index],
+                              kPatternIdentifySuffix: fileSuffixs[index],
+                              kPatternIdentifyRegex: filePatterns[index],
+                              kPatternIdentifyGroupIndex: matchGroupIndexs[index]}];
+    }
+    
+    return patterns;
+}
+
+- (NSDictionary *)createEmptyResourcePattern {
+    return @{kPatternIdentifyEnable: @(1),
+             kPatternIdentifySuffix: @"todo",
+             kPatternIdentifyRegex: @"(.+)",
+             kPatternIdentifyGroupIndex: @(1)};
+}
+
 #pragma mark - Private
 
 - (void)runSearchTask {
@@ -145,9 +197,8 @@ typedef NS_ENUM(NSUInteger, LSFileType) {
     });
 }
 
-- (BOOL)handleFilesAtPath:(NSString *)dir
-{
-    // Get all the files at dir
+- (BOOL)handleFilesAtPath:(NSString *)dir {
+    // Get all files at the dir
     NSError *error = nil;
     NSArray *files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:dir error:&error];
     if (files.count == 0) {
@@ -166,69 +217,29 @@ typedef NS_ENUM(NSUInteger, LSFileType) {
         if ([self isDirectory:tempPath]) {
             [self handleFilesAtPath:tempPath];
         } else {
-            LSFileType fileType = [self fileTypeByName:file];
-            if (fileType == LSFileTypeNone) {
+            NSString *ext = [[file pathExtension] lowercaseString];
+            NSDictionary *resourcePattern = self.fileSuffixToResourcePatterns[ext];
+            if (!resourcePattern) {
                 continue;
-            } else {
-                [self parseFileAtPath:tempPath withType:fileType];
             }
+            
+            [self parseFileAtPath:tempPath withResourcePattern:resourcePattern];
         }
     }
     return YES;
 }
 
-- (void)parseFileAtPath:(NSString *)path withType:(LSFileType)fileType {
+- (void)parseFileAtPath:(NSString *)path withResourcePattern:(NSDictionary *)resourcePattern {
     NSString *content = [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:nil];
     if (!content) {
         return;
     }
+
+    NSString *regex = resourcePattern[kPatternIdentifyRegex];
+    NSInteger groupIndex = [resourcePattern[kPatternIdentifyGroupIndex] integerValue];
     
-    NSString *pattern = nil;
-    NSInteger groupIndex = -1;
-    switch (fileType) {
-        case LSFileTypeObjC:
-            pattern = @"@\"(.+?)\"";//@"imageNamed:@\"(.+)\"";//or: (imageNamed|contentOfFile):@\"(.*)\" // http://www.raywenderlich.com/30288/nsregularexpression-tutorial-and-cheat-sheet
-            groupIndex = 1;
-            break;
-        case LSFileTypeSwift:
-            pattern = @"\"(.+?)\"";//@"named:\\s*\"(.+?)\"";//UIImage(named:"xx") or UIImage(named: "xx")
-            groupIndex = 1;
-            break;
-        case LSFileTypeXib:
-            pattern = @"image name=\"(.+?)\"";//image name="xx"
-            groupIndex = 1;
-            break;
-        case LSFileTypeHtml:
-            pattern = @"img\\s+src=[\"\'](.+?)[\"\']";//<img src="xx"> <img src='xx'>
-            groupIndex = 1;
-            break;
-        case LSFileTypeJs:
-            pattern = @"[\"\']src[\"\'],\\s+[\"\'](.+?)[\"\']";// "src", "xx"> 'src', 'xx'>
-            groupIndex = 1;
-            break;
-        case LSFileTypeJson:
-            pattern = @":\\s+\"(.+?)\"";//"xx"
-            groupIndex = 1;
-            break;
-        case LSFileTypePlist:
-            pattern = @">(.+?)<";//"<string>xx</string>"
-            groupIndex = 1;
-            break;
-        case LSFileTypeCSS:
-        case LSFileTypeH:
-        case LSFileTypeC:
-            pattern = [NSString stringWithFormat:@"([a-zA-Z0-9_-]+)\\.(%@)", self.resSuffixs.count ? [self.resSuffixs componentsJoinedByString:@"|"] : @"png|gif|jpg|jpeg"]; //*.(png|gif|jpg|jpeg)
-            groupIndex = 1;
-            break;
-        case LSFileTypeStrings:
-            pattern = @"=\\s*\"(.+)\"\\s*;";
-            groupIndex = 1;
-            break;
-        default:
-            break;
-    }
-    if (pattern && groupIndex >= 0) {
-        NSArray *list = [self getMatchStringWithContent:content pattern:pattern groupIndex:groupIndex];
+    if (regex.length && groupIndex >= 0) {
+        NSArray *list = [self getMatchStringWithContent:content pattern:regex groupIndex:groupIndex];
         [self.resStringSet addObjectsFromArray:list];
     }
 }
@@ -255,48 +266,6 @@ typedef NS_ENUM(NSUInteger, LSFileType) {
 - (BOOL)isDirectory:(NSString *)path {
     BOOL isDirectory;
     return [[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDirectory] && isDirectory;
-}
-
-- (LSFileType)fileTypeByName:(NSString *)name {
-    NSString *ext = [[name pathExtension] lowercaseString];
-    if (![self.fileSuffixs containsObject:ext]) {
-        return LSFileTypeNone;
-    }
-    if ([ext isEqualTo:@"m"] || [ext isEqualTo:@"mm"]) {
-        return LSFileTypeObjC;
-    }
-    if ([ext isEqualTo:@"xib"] || [ext isEqualTo:@"storyboard"]) {
-        return LSFileTypeXib;
-    }
-    if ([ext isEqualTo:@"plist"]) {
-        return LSFileTypePlist;
-    }
-    if ([ext isEqualTo:@"swift"]) {
-        return LSFileTypeSwift;
-    }
-    if ([ext isEqualTo:@"h"]) {
-        return LSFileTypeH;
-    }
-    if ([ext isEqualTo:@"c"] || [ext isEqualTo:@"cpp"]) {
-        return LSFileTypeC;
-    }
-    if ([ext isEqualTo:@"html"]) {
-        return LSFileTypeHtml;
-    }
-    if ([ext isEqualTo:@"json"]) {
-        return LSFileTypeJson;
-    }
-    if ([ext isEqualTo:@"js"]) {
-        return LSFileTypeJs;
-    }
-    if ([ext isEqualTo:@"css"]) {
-        return LSFileTypeCSS;
-    }
-    if ([ext isEqualTo:@"strings"]) {
-        return LSFileTypeStrings;
-    }
-    
-    return LSFileTypeNone;
 }
 
 //- (NSArray *)resourceStringsInDirectory:(NSString *)directoryPath fileTypes:(NSArray *)fileTypes {

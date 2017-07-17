@@ -1,14 +1,14 @@
 //
-//  LSFileUtils.m
+//  FileUtils.m
 //  LSUnusedResources
 //
 //  Created by jhgfer on 16/4/25.
 //  Copyright © 2016年 lessfun.com. All rights reserved.
 //
 
-#import "LSFileUtils.h"
+#import "FileUtils.h"
 
-@implementation LSFileUtils
+@implementation FileUtils
 
 + (uint64_t)fileSizeAtPath:(NSString *)path isDir:(BOOL *)isDir {
     uint64_t size = 0L;

@@ -8,7 +8,7 @@
 
 #import "ResourceFileSearcher.h"
 #import "StringUtils.h"
-#import "LSFileUtils.h"
+#import "FileUtils.h"
 
 NSString * const kNotificationResourceFileQueryDone = @"kNotificationResourceFileQueryDone";
 
@@ -30,7 +30,7 @@ static NSString * const kSuffixPng         = @"png";
         NSError *error = nil;
         NSArray *files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:self.path error:&error];
         if (files.count == 0) {
-            return NO;
+            return nil;
         }
         for (NSString *file in files) {
             if ([StringUtils isImageTypeWithName:file]) {
@@ -102,7 +102,7 @@ static NSString * const kSuffixPng         = @"png";
                 ResourceFileInfo *info = [ResourceFileInfo new];
                 info.name = name;
                 info.path = path;
-                info.fileSize = [LSFileUtils fileSizeAtPath:path isDir:&isDir];
+                info.fileSize = [FileUtils fileSizeAtPath:path isDir:&isDir];
                 info.isDir = isDir;
                 tempResNameInfoDict[keyName] = info;
             }

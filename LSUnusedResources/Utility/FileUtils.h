@@ -1,5 +1,5 @@
 //
-//  LSFileUtils.h
+//  FileUtils.h
 //  LSUnusedResources
 //
 //  Created by jhgfer on 16/4/25.
@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface LSFileUtils : NSObject
+@interface FileUtils : NSObject
 /**
  *  get file size, contain directory
  *  @param path  path

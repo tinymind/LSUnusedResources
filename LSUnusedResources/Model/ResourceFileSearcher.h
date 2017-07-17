@@ -26,11 +26,12 @@ extern NSString * const kNotificationResourceFileQueryDone;
 
 @interface ResourceFileSearcher : NSObject
 
-@property (strong, nonatomic, readonly) NSMutableDictionary *resNameInfoDict;/**< dict<NSString name, ResourceFileInfo *info> */
+@property (strong, nonatomic, readonly) NSMutableDictionary *resNameInfoDict;/**< dict<NSString *name, ResourceFileInfo *info> */
 
 + (instancetype)sharedObject;
 
 - (void)startWithProjectPath:(NSString *)projectPath excludeFolders:(NSArray *)excludeFolders resourceSuffixs:(NSArray *)resourceSuffixs;
+
 - (void)reset;
 
 @end

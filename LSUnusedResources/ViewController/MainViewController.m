@@ -10,16 +10,17 @@
 #import "ResourceFileSearcher.h"
 #import "ResourceStringSearcher.h"
 #import "StringUtils.h"
+#import "ResourceSettings.h"
 
 // Constant strings
 static NSString * const kDefaultResourceSuffixs    = @"imageset;jpg;gif;png";
-static NSString * const kTableColumnImageIcon      = @"ImageIcon";
-static NSString * const kTableColumnImageShortName = @"ImageShortName";
-static NSString * const kTableColumnFileSize       = @"FileSize";
 
-@interface MainViewController () <NSTableViewDelegate, NSTableViewDataSource>{
-    BOOL _fileSizeDesc;//文件大小按降序排列
-}
+static NSString * const kResultIdentifyImageIcon      = @"FileIcon";
+static NSString * const kResultIdentifyImageShortName = @"FileName";
+static NSString * const kResultIdentifyFileSize       = @"FileSize";
+static NSString * const kResultIdentifyFilePath       = @"FilePath";
+
+@interface MainViewController () <NSTableViewDelegate, NSTableViewDataSource, NSTextFieldDelegate>
 
 // Project
 @property (weak) IBOutlet NSButton *browseButton;
@@ -29,20 +30,7 @@ static NSString * const kTableColumnFileSize       = @"FileSize";
 // Settings
 @property (weak) IBOutlet NSTextField *resSuffixTextField;
 
-@property (weak) IBOutlet NSButton *headerCheckbox;
-@property (weak) IBOutlet NSButton *mCheckbox;
-@property (weak) IBOutlet NSButton *mmCheckbox;
-@property (weak) IBOutlet NSButton *cppCheckbox;
-@property (weak) IBOutlet NSButton *swiftCheckbox;
-
-@property (weak) IBOutlet NSButton *htmlCheckbox;
-@property (weak) IBOutlet NSButton *cssCheckbox;
-@property (weak) IBOutlet NSButton *plistCheckbox;
-@property (weak) IBOutlet NSButton *xibCheckbox;
-@property (weak) IBOutlet NSButton *sbCheckbox;
-@property (weak) IBOutlet NSButton *jsonCheckbox;
-@property (weak) IBOutlet NSButton *javaScriptCheckbox;
-@property (weak) IBOutlet NSButton *stringsCheckbox;
+@property (weak) IBOutlet NSTableView *patternTableView;
 
 @property (weak) IBOutlet NSButton *ignoreSimilarCheckbox;
 
@@ -59,6 +47,7 @@ static NSString * const kTableColumnFileSize       = @"FileSize";
 @property (assign, nonatomic) BOOL isFileDone;
 @property (assign, nonatomic) BOOL isStringDone;
 @property (strong, nonatomic) NSDate *startTime;
+@property (assign, nonatomic) BOOL isSortDescByFileSize;
 
 @end
 
@@ -72,11 +61,16 @@ static NSString * const kTableColumnFileSize       = @"FileSize";
     [super viewDidLoad];
 
     // Do any additional setup after loading the view.
+    
+    [self setupSettings];
+    
     // Setup double click
-    self.unusedResults = [NSMutableArray array];
-    [self.resultsTableView setDoubleAction:@selector(tableViewDoubleClicked)];
+    [self.resultsTableView setDoubleAction:@selector(onResultsTableViewDoubleClicked)];
     self.resultsTableView.allowsEmptySelection = YES;
     self.resultsTableView.allowsMultipleSelection = YES;
+    
+    self.patternTableView.allowsEmptySelection = YES;
+    self.patternTableView.allowsMultipleSelection = NO;
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onResourceFileQueryDone:) name:kNotificationResourceFileQueryDone object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onResourceStringQueryDone:) name:kNotificationResourceStringQueryDone object:nil];
@@ -100,6 +94,7 @@ static NSString * const kTableColumnFileSize       = @"FileSize";
     if (okButtonPressed) {
         // Update the path text field
         NSString *path = [[openPanel URL] path];
+        [ResourceSettings sharedObject].projectPath = path;
         [self.pathTextField setStringValue:path];
     }
 }
@@ -136,11 +131,12 @@ static NSString * const kTableColumnFileSize       = @"FileSize";
         [self showAlertWithStyle:NSWarningAlertStyle title:@"Suffix Error" subtitle:@"Resource suffix is invalid"];
         return ;
     }
-    NSArray *fileSuffixs = [self includeFileSuffixs];
-    NSArray *excludeFolders = self.excludeFolderTextField.stringValue.length ? [self.excludeFolderTextField.stringValue componentsSeparatedByString:@";"] : nil;
+
+    NSArray *excludeFolders = [ResourceSettings sharedObject].excludeFolders;
     
     [[ResourceFileSearcher sharedObject] startWithProjectPath:projectPath excludeFolders:excludeFolders resourceSuffixs:resourceSuffixs];
-    [[ResourceStringSearcher sharedObject] startWithProjectPath:projectPath excludeFolders:excludeFolders resourceSuffixs:resourceSuffixs fileSuffixs:fileSuffixs];
+    
+    [[ResourceStringSearcher sharedObject] startWithProjectPath:projectPath excludeFolders:excludeFolders resourceSuffixs:resourceSuffixs resourcePatterns:[self resourcePatterns]];
     
     [self setUIEnabled:NO];
 }
@@ -192,9 +188,33 @@ static NSString * const kTableColumnFileSize       = @"FileSize";
         [self updateUnusedResultsCount];
     } else {
         NSAlert *alert = [[NSAlert alloc] init];
-        [alert setMessageText:@"Please select first."];
+        [alert setMessageText:@"Please select any table column."];
         [alert runModal];
     }
+}
+
+- (IBAction)onRemovePatternButtonClicked:(id)sender {
+    if (self.patternTableView.numberOfSelectedRows > 0) {
+        NSIndexSet *selectedIndexSet = self.patternTableView.selectedRowIndexes;
+        NSUInteger index = [selectedIndexSet firstIndex];
+        [[ResourceSettings sharedObject] removeResourcePatternAtIndex:index];
+        [self.patternTableView reloadData];
+    } else {
+        NSAlert *alert = [[NSAlert alloc] init];
+        [alert setMessageText:@"Please select any table column."];
+        [alert runModal];
+    }
+}
+
+- (IBAction)onAddPatternButtonClicked:(id)sender {
+    [[ResourceSettings sharedObject] addResourcePattern:[[ResourceStringSearcher sharedObject] createEmptyResourcePattern]];
+    [self.patternTableView reloadData];
+}
+
+- (void)onResultsTableViewDoubleClicked {
+    // Open finder
+    ResourceFileInfo *info = [self.unusedResults objectAtIndex:[self.resultsTableView clickedRow]];
+    [[NSWorkspace sharedWorkspace] selectFile:info.path inFileViewerRootedAtPath:@""];
 }
 
 #pragma mark - NSNotification
@@ -209,40 +229,54 @@ static NSString * const kTableColumnFileSize       = @"FileSize";
     [self searchUnusedResourcesIfNeeded];
 }
 
-#pragma mark - <NSTableViewDelegate>
+#pragma mark - <NSTableViewDataSource>
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView {
-    return [self.unusedResults count];
-}
-
-- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex {
-    // Get the unused image
-    ResourceFileInfo *info = [self.unusedResults objectAtIndex:rowIndex];
-    
-    // Check the column
-    NSString *columnIdentifier = [tableColumn identifier];
-    if ([columnIdentifier isEqualToString:kTableColumnImageIcon]) {
-        return [info image];
-    } else if ([columnIdentifier isEqualToString:kTableColumnImageShortName]) {
-        return info.name;
-    } else if ([columnIdentifier isEqualToString:kTableColumnFileSize]) {
-        return [NSString stringWithFormat:@"%.2f", info.fileSize / 1024.0];
+    if (tableView == self.resultsTableView) {
+        return self.unusedResults.count;
+    } else {
+        return [self resourcePatterns].count;
     }
-    
-    return info.path;
 }
 
-- (void)tableViewDoubleClicked {
-    // Open finder
-    ResourceFileInfo *info = [self.unusedResults objectAtIndex:[self.resultsTableView clickedRow]];
-    [[NSWorkspace sharedWorkspace] selectFile:info.path inFileViewerRootedAtPath:@""];
+- (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row {
+    // Check the column
+    NSString *identifier = [tableColumn identifier];
+    if (tableView == self.resultsTableView) {
+        // Get the unused image
+        ResourceFileInfo *info = [self.unusedResults objectAtIndex:row];
+        
+        if ([identifier isEqualToString:kResultIdentifyImageIcon]) {
+            return [info image];
+        } else if ([identifier isEqualToString:kResultIdentifyImageShortName]) {
+            return info.name;
+        } else if ([identifier isEqualToString:kResultIdentifyFileSize]) {
+            return [NSString stringWithFormat:@"%.2f", info.fileSize / 1024.0];
+        }
+        
+        return info.path;
+    } else {
+        NSDictionary *dict = [[self resourcePatterns] objectAtIndex:row];
+        return dict[identifier];
+    }
 }
 
-- (void)tableView:(NSTableView *)tableView mouseDownInHeaderOfTableColumn:(NSTableColumn *)tableColumn{
+- (void)tableView:(NSTableView *)tableView setObjectValue:(id)object forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row {
+    if (tableView == self.patternTableView) {
+        NSString *identifier = [tableColumn identifier];
+        [[ResourceSettings sharedObject] updateResourcePatternAtIndex:row withObject:object forKey:identifier];
+        
+        [tableView reloadData];
+    }
+}
+
+#pragma mark - <NSTableViewDelegate>
+
+- (void)tableView:(NSTableView *)tableView mouseDownInHeaderOfIdentify:(NSTableColumn *)tableColumn {
     if([tableColumn.identifier isEqualToString:@"FileSize"]){
         //点击FileSize头部
-        _fileSizeDesc = !_fileSizeDesc;
-        if(_fileSizeDesc){
+        self.isSortDescByFileSize = !self.isSortDescByFileSize;
+        if(self.isSortDescByFileSize) {
             //降序
             NSArray *array = [self.unusedResults sortedArrayUsingComparator:^NSComparisonResult(ResourceFileInfo *obj1, ResourceFileInfo *obj2) {
                 return obj1.fileSize < obj2.fileSize;
@@ -265,6 +299,22 @@ static NSString * const kTableColumnFileSize       = @"FileSize";
     }
 }
 
+#pragma mark - <NSTextFieldDelegate>
+
+- (void)controlTextDidChange:(NSNotification *)notification {
+    NSTextField *textField = [notification object];
+    if (textField == self.pathTextField) {
+        [ResourceSettings sharedObject].projectPath = [textField stringValue];
+    } else if (textField == self.excludeFolderTextField) {
+        [ResourceSettings sharedObject].excludeFolders = [[textField stringValue] componentsSeparatedByString:@";"];
+    } else if (textField == self.resSuffixTextField) {
+        NSString *suffixs = [[textField stringValue] lowercaseString];
+        suffixs = [suffixs stringByReplacingOccurrencesOfString:@" " withString:@""];
+        suffixs = [suffixs stringByReplacingOccurrencesOfString:@"." withString:@""];
+        [ResourceSettings sharedObject].resourceSuffixs = [suffixs componentsSeparatedByString:@";"];
+    }
+}
+
 #pragma mark - Private
 
 - (void)showAlertWithStyle:(NSAlertStyle)style title:(NSString *)title subtitle:(NSString *)subtitle {
@@ -276,63 +326,11 @@ static NSString * const kTableColumnFileSize       = @"FileSize";
 }
 
 - (NSArray *)resourceSuffixs {
-    NSString *suffixs = self.resSuffixTextField.stringValue;
-    if (!suffixs.length) {
-        suffixs = kDefaultResourceSuffixs;
-    }
-    suffixs = [suffixs lowercaseString];
-    suffixs = [suffixs stringByReplacingOccurrencesOfString:@" " withString:@""];
-    suffixs = [suffixs stringByReplacingOccurrencesOfString:@"." withString:@""];
-    return [suffixs componentsSeparatedByString:@";"];
+    return [ResourceSettings sharedObject].resourceSuffixs;
 }
 
-- (NSArray *)includeFileSuffixs {
-    NSMutableArray *suffixs = [NSMutableArray array];
-    
-    if ([self.headerCheckbox state]) {
-        [suffixs addObject:@"h"];
-    }
-    if ([self.mCheckbox state]) {
-        [suffixs addObject:@"m"];
-    }
-    if ([self.mmCheckbox state]) {
-        [suffixs addObject:@"mm"];
-    }
-    if ([self.cppCheckbox state]) {
-        [suffixs addObject:@"cpp"];
-    }
-    if ([self.swiftCheckbox state]) {
-        [suffixs addObject:@"swift"];
-    }
-    if ([self.htmlCheckbox state]) {
-        [suffixs addObject:@"html"];
-    }
-    if ([self.jsonCheckbox state]) {
-        [suffixs addObject:@"json"];
-    }
-    if ([self.plistCheckbox state]) {
-        [suffixs addObject:@"plist"];
-    }
-    if ([self.cssCheckbox state]) {
-        [suffixs addObject:@"css"];
-    }
-    if ([self.xibCheckbox state]) {
-        [suffixs addObject:@"xib"];
-    }
-    if ([self.sbCheckbox state]) {
-        [suffixs addObject:@"storyboard"];
-    }
-    if ([self.javaScriptCheckbox state]) {
-        [suffixs addObject:@"js"];
-    }
-    if ([self.stringsCheckbox state]) {
-        [suffixs addObject:@"strings"];
-    }
-    
-    if (suffixs.count == 0) {
-        [suffixs addObject:@"m"];
-    }
-    return suffixs;
+- (NSArray *)resourcePatterns {
+    return [ResourceSettings sharedObject].resourcePatterns;
 }
 
 - (void)setUIEnabled:(BOOL)state {
@@ -344,25 +342,10 @@ static NSString * const kTableColumnFileSize       = @"FileSize";
         self.statusLabel.stringValue = @"Searching...";
     }
     
-    // Button groups
-    
     [_browseButton setEnabled:state];
     [_resSuffixTextField setEnabled:state];
     [_pathTextField setEnabled:state];
     [_excludeFolderTextField setEnabled:state];
-    
-    [_mCheckbox setEnabled:state];
-    [_xibCheckbox setEnabled:state];
-    [_sbCheckbox setEnabled:state];
-    [_cppCheckbox setEnabled:state];
-    [_mmCheckbox setEnabled:state];
-    [_headerCheckbox setEnabled:state];
-    [_htmlCheckbox setEnabled:state];
-    [_jsonCheckbox setEnabled:state];
-    [_javaScriptCheckbox setEnabled:state];
-    [_plistCheckbox setEnabled:state];
-    [_cssCheckbox setEnabled:state];
-    [_swiftCheckbox setEnabled:state];
     
     [_ignoreSimilarCheckbox setEnabled:state];
 
@@ -417,8 +400,7 @@ static NSString * const kTableColumnFileSize       = @"FileSize";
     }
 }
 
-- (BOOL)usingResWithDiffrentDirName:(ResourceFileInfo *)resInfo
-{
+- (BOOL)usingResWithDiffrentDirName:(ResourceFileInfo *)resInfo {
     if (!resInfo.isDir) {
         return NO;
     }
@@ -439,6 +421,35 @@ static NSString * const kTableColumnFileSize       = @"FileSize";
         }
     }
     return NO;
+}
+
+- (void)setupSettings {
+    self.unusedResults = [NSMutableArray array];
+    
+    [self.pathTextField setStringValue:[ResourceSettings sharedObject].projectPath ? : @""];
+    NSString *exclude = @"";
+    if ([ResourceSettings sharedObject].excludeFolders.count) {
+        exclude = [[ResourceSettings sharedObject].excludeFolders componentsJoinedByString:@";"];
+    }
+    [self.excludeFolderTextField setStringValue:exclude];
+    
+    NSArray *resSuffixs = [ResourceSettings sharedObject].resourceSuffixs;
+    if (!resSuffixs.count) {
+        resSuffixs = [kDefaultResourceSuffixs componentsSeparatedByString:@";"];
+        [ResourceSettings sharedObject].resourceSuffixs = resSuffixs;
+    }
+    [self.resSuffixTextField setStringValue:[resSuffixs componentsJoinedByString:@";"]];
+    
+    NSArray *resPatterns = [self resourcePatterns];
+    if (!resPatterns.count) {
+        resPatterns = [[ResourceStringSearcher sharedObject] createDefaultResourcePatternsWithResourceSuffixs:resSuffixs];
+        [ResourceSettings sharedObject].resourcePatterns = resPatterns;
+    }
+    
+    NSNumber *matchSimilar = [ResourceSettings sharedObject].matchSimilarName;
+    if (matchSimilar.boolValue) {
+        [self.ignoreSimilarCheckbox setState:NSOnState];
+    }
 }
 
 @end

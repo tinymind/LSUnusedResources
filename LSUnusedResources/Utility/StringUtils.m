@@ -33,10 +33,14 @@ static NSString * const kSuffix3x = @"@3x";
 }
 
 + (BOOL)isImageTypeWithName:(NSString *)name {
-    static NSArray *arr = nil;
-    arr = @[@"png", @"jpg", @"jpeg", @"gif", @"bmp", @"pdf"];
+    static NSArray *imageSuffixs = nil;
+    
+    if (!imageSuffixs) {
+        imageSuffixs = @[@"png", @"jpg", @"jpeg", @"gif", @"bmp", @"pdf"];
+    }
+    
     NSString *ext = [[name pathExtension] lowercaseString];
-    if ([arr containsObject:ext]) {
+    if (ext.length && [imageSuffixs containsObject:ext]) {
         return YES;
     }
     return NO;
