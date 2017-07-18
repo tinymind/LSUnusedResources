@@ -13,12 +13,13 @@
 #import "ResourceSettings.h"
 
 // Constant strings
-static NSString * const kDefaultResourceSuffixs    = @"imageset;jpg;gif;png";
+static NSString * const kDefaultResourceSuffixs    = @"imageset|jpg|gif|png";
+static NSString * const kDefaultResourceSeparator  = @"|";
 
-static NSString * const kResultIdentifyImageIcon      = @"FileIcon";
-static NSString * const kResultIdentifyImageShortName = @"FileName";
-static NSString * const kResultIdentifyFileSize       = @"FileSize";
-static NSString * const kResultIdentifyFilePath       = @"FilePath";
+static NSString * const kResultIdentifyFileIcon    = @"FileIcon";
+static NSString * const kResultIdentifyFileName    = @"FileName";
+static NSString * const kResultIdentifyFileSize    = @"FileSize";
+static NSString * const kResultIdentifyFilePath    = @"FilePath";
 
 @interface MainViewController () <NSTableViewDelegate, NSTableViewDataSource, NSTextFieldDelegate>
 
@@ -213,7 +214,11 @@ static NSString * const kResultIdentifyFilePath       = @"FilePath";
 
 - (void)onResultsTableViewDoubleClicked {
     // Open finder
-    ResourceFileInfo *info = [self.unusedResults objectAtIndex:[self.resultsTableView clickedRow]];
+    NSInteger index = [self.resultsTableView clickedRow];
+    if (self.unusedResults.count == 0 || index >= self.unusedResults.count) {
+        return;
+    }
+    ResourceFileInfo *info = [self.unusedResults objectAtIndex:index];
     [[NSWorkspace sharedWorkspace] selectFile:info.path inFileViewerRootedAtPath:@""];
 }
 
@@ -246,9 +251,9 @@ static NSString * const kResultIdentifyFilePath       = @"FilePath";
         // Get the unused image
         ResourceFileInfo *info = [self.unusedResults objectAtIndex:row];
         
-        if ([identifier isEqualToString:kResultIdentifyImageIcon]) {
+        if ([identifier isEqualToString:kResultIdentifyFileIcon]) {
             return [info image];
-        } else if ([identifier isEqualToString:kResultIdentifyImageShortName]) {
+        } else if ([identifier isEqualToString:kResultIdentifyFileName]) {
             return info.name;
         } else if ([identifier isEqualToString:kResultIdentifyFileSize]) {
             return [NSString stringWithFormat:@"%.2f", info.fileSize / 1024.0];
@@ -272,25 +277,28 @@ static NSString * const kResultIdentifyFilePath       = @"FilePath";
 
 #pragma mark - <NSTableViewDelegate>
 
-- (void)tableView:(NSTableView *)tableView mouseDownInHeaderOfIdentify:(NSTableColumn *)tableColumn {
-    if([tableColumn.identifier isEqualToString:@"FileSize"]){
-        //点击FileSize头部
+- (void)tableView:(NSTableView *)tableView mouseDownInHeaderOfTableColumn:(NSTableColumn *)tableColumn {
+    if (tableView == self.patternTableView) {
+        return;
+    }
+    if ([tableColumn.identifier isEqualToString:kResultIdentifyFileSize]) {
+        //Click FileSize Header
         self.isSortDescByFileSize = !self.isSortDescByFileSize;
-        if(self.isSortDescByFileSize) {
-            //降序
-            NSArray *array = [self.unusedResults sortedArrayUsingComparator:^NSComparisonResult(ResourceFileInfo *obj1, ResourceFileInfo *obj2) {
+        
+        NSArray *array = nil;
+        if (self.isSortDescByFileSize) {
+            array = [self.unusedResults sortedArrayUsingComparator:^NSComparisonResult(ResourceFileInfo *obj1, ResourceFileInfo *obj2) {
                 return obj1.fileSize < obj2.fileSize;
             }];
-            self.unusedResults = [array mutableCopy];
-            [self.resultsTableView reloadData];
-        }else{
-            NSArray *array = [self.unusedResults sortedArrayUsingComparator:^NSComparisonResult(ResourceFileInfo *obj1, ResourceFileInfo *obj2) {
+        } else {
+            array = [self.unusedResults sortedArrayUsingComparator:^NSComparisonResult(ResourceFileInfo *obj1, ResourceFileInfo *obj2) {
                 return obj1.fileSize > obj2.fileSize;
             }];
-            self.unusedResults = [array mutableCopy];
-            [self.resultsTableView reloadData];
         }
-    }else if([tableColumn.identifier isEqualToString:@"ImageShortName"]){
+        
+        self.unusedResults = [array mutableCopy];
+        [self.resultsTableView reloadData];
+    } else if ([tableColumn.identifier isEqualToString:kResultIdentifyFileName]) {
         NSArray *array = [self.unusedResults sortedArrayUsingComparator:^NSComparisonResult(ResourceFileInfo *obj1, ResourceFileInfo *obj2) {
             return [obj1.name compare:obj2.name];
         }];
@@ -306,12 +314,12 @@ static NSString * const kResultIdentifyFilePath       = @"FilePath";
     if (textField == self.pathTextField) {
         [ResourceSettings sharedObject].projectPath = [textField stringValue];
     } else if (textField == self.excludeFolderTextField) {
-        [ResourceSettings sharedObject].excludeFolders = [[textField stringValue] componentsSeparatedByString:@";"];
+        [ResourceSettings sharedObject].excludeFolders = [[textField stringValue] componentsSeparatedByString:kDefaultResourceSeparator];
     } else if (textField == self.resSuffixTextField) {
         NSString *suffixs = [[textField stringValue] lowercaseString];
         suffixs = [suffixs stringByReplacingOccurrencesOfString:@" " withString:@""];
         suffixs = [suffixs stringByReplacingOccurrencesOfString:@"." withString:@""];
-        [ResourceSettings sharedObject].resourceSuffixs = [suffixs componentsSeparatedByString:@";"];
+        [ResourceSettings sharedObject].resourceSuffixs = [suffixs componentsSeparatedByString:kDefaultResourceSeparator];
     }
 }
 
@@ -429,16 +437,16 @@ static NSString * const kResultIdentifyFilePath       = @"FilePath";
     [self.pathTextField setStringValue:[ResourceSettings sharedObject].projectPath ? : @""];
     NSString *exclude = @"";
     if ([ResourceSettings sharedObject].excludeFolders.count) {
-        exclude = [[ResourceSettings sharedObject].excludeFolders componentsJoinedByString:@";"];
+        exclude = [[ResourceSettings sharedObject].excludeFolders componentsJoinedByString:kDefaultResourceSeparator];
     }
     [self.excludeFolderTextField setStringValue:exclude];
     
     NSArray *resSuffixs = [ResourceSettings sharedObject].resourceSuffixs;
     if (!resSuffixs.count) {
-        resSuffixs = [kDefaultResourceSuffixs componentsSeparatedByString:@";"];
+        resSuffixs = [kDefaultResourceSuffixs componentsSeparatedByString:kDefaultResourceSeparator];
         [ResourceSettings sharedObject].resourceSuffixs = resSuffixs;
     }
-    [self.resSuffixTextField setStringValue:[resSuffixs componentsJoinedByString:@";"]];
+    [self.resSuffixTextField setStringValue:[resSuffixs componentsJoinedByString:kDefaultResourceSeparator]];
     
     NSArray *resPatterns = [self resourcePatterns];
     if (!resPatterns.count) {

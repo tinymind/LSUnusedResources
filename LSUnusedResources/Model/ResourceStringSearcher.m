@@ -178,7 +178,7 @@ NSString * const kNotificationResourceStringQueryDone = @"kNotificationResourceS
 
 - (NSDictionary *)createEmptyResourcePattern {
     return @{kPatternIdentifyEnable: @(1),
-             kPatternIdentifySuffix: @"todo",
+             kPatternIdentifySuffix: @"tmp",
              kPatternIdentifyRegex: @"(.+)",
              kPatternIdentifyGroupIndex: @(1)};
 }
@@ -244,8 +244,7 @@ NSString * const kNotificationResourceStringQueryDone = @"kNotificationResourceS
     }
 }
 
-- (NSArray *)getMatchStringWithContent:(NSString *)content pattern:(NSString*)pattern groupIndex:(NSInteger)index
-{
+- (NSArray *)getMatchStringWithContent:(NSString *)content pattern:(NSString*)pattern groupIndex:(NSInteger)index {
     NSRegularExpression* regexExpression = [NSRegularExpression regularExpressionWithPattern:pattern options:NSRegularExpressionCaseInsensitive error:nil];
     NSArray* matchs = [regexExpression matchesInString:content options:0 range:NSMakeRange(0, content.length)];
     
