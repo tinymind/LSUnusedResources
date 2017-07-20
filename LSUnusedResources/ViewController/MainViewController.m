@@ -304,7 +304,13 @@ static NSString * const kResultIdentifyFilePath    = @"FilePath";
         }];
         self.unusedResults = [array mutableCopy];
         [self.resultsTableView reloadData];
-    }
+	} else  if ([tableColumn.identifier isEqualToString:kResultIdentifyFilePath]){
+		NSArray *array = [self.unusedResults sortedArrayUsingComparator:^NSComparisonResult(ResourceFileInfo *obj1, ResourceFileInfo *obj2) {
+			return [obj1.path compare:obj2.path];
+		}];
+		self.unusedResults = [array mutableCopy];
+		[self.resultsTableView reloadData];
+	}
 }
 
 #pragma mark - <NSTextFieldDelegate>
