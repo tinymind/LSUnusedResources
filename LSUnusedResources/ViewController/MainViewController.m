@@ -222,6 +222,10 @@ static NSString * const kResultIdentifyFilePath    = @"FilePath";
     [[NSWorkspace sharedWorkspace] selectFile:info.path inFileViewerRootedAtPath:@""];
 }
 
+- (IBAction)onIgnoreSimilarCheckboxClicked:(NSButton *)sender {
+    [ResourceSettings sharedObject].matchSimilarName = sender.state == NSOnState ? @(YES) : @(NO);
+}
+
 #pragma mark - NSNotification
 
 - (void)onResourceFileQueryDone:(NSNotification *)notification {
@@ -281,11 +285,10 @@ static NSString * const kResultIdentifyFilePath    = @"FilePath";
     if (tableView == self.patternTableView) {
         return;
     }
+    NSArray *array = nil;
     if ([tableColumn.identifier isEqualToString:kResultIdentifyFileSize]) {
-        //Click FileSize Header
         self.isSortDescByFileSize = !self.isSortDescByFileSize;
         
-        NSArray *array = nil;
         if (self.isSortDescByFileSize) {
             array = [self.unusedResults sortedArrayUsingComparator:^NSComparisonResult(ResourceFileInfo *obj1, ResourceFileInfo *obj2) {
                 return obj1.fileSize < obj2.fileSize;
@@ -295,22 +298,20 @@ static NSString * const kResultIdentifyFilePath    = @"FilePath";
                 return obj1.fileSize > obj2.fileSize;
             }];
         }
-        
-        self.unusedResults = [array mutableCopy];
-        [self.resultsTableView reloadData];
     } else if ([tableColumn.identifier isEqualToString:kResultIdentifyFileName]) {
-        NSArray *array = [self.unusedResults sortedArrayUsingComparator:^NSComparisonResult(ResourceFileInfo *obj1, ResourceFileInfo *obj2) {
+        array = [self.unusedResults sortedArrayUsingComparator:^NSComparisonResult(ResourceFileInfo *obj1, ResourceFileInfo *obj2) {
             return [obj1.name compare:obj2.name];
         }];
+    } else  if ([tableColumn.identifier isEqualToString:kResultIdentifyFilePath]){
+        array = [self.unusedResults sortedArrayUsingComparator:^NSComparisonResult(ResourceFileInfo *obj1, ResourceFileInfo *obj2) {
+            return [obj1.path compare:obj2.path];
+        }];
+    }
+    
+    if (array) {
         self.unusedResults = [array mutableCopy];
         [self.resultsTableView reloadData];
-	} else  if ([tableColumn.identifier isEqualToString:kResultIdentifyFilePath]){
-		NSArray *array = [self.unusedResults sortedArrayUsingComparator:^NSComparisonResult(ResourceFileInfo *obj1, ResourceFileInfo *obj2) {
-			return [obj1.path compare:obj2.path];
-		}];
-		self.unusedResults = [array mutableCopy];
-		[self.resultsTableView reloadData];
-	}
+    }
 }
 
 #pragma mark - <NSTextFieldDelegate>
@@ -348,7 +349,6 @@ static NSString * const kResultIdentifyFilePath    = @"FilePath";
 }
 
 - (void)setUIEnabled:(BOOL)state {
-    // Individual
     if (state) {
         [self updateUnusedResultsCount];
     } else {
@@ -387,7 +387,7 @@ static NSString * const kResultIdentifyFilePath    = @"FilePath";
         tips = [tips stringByAppendingString:[NSString stringWithFormat:@"%ld resources", [[ResourceFileSearcher sharedObject].resNameInfoDict allKeys].count]];
     }
     if (self.isStringDone) {
-        tips = [tips stringByAppendingString:[NSString stringWithFormat:@"%ld strings", [ResourceStringSearcher sharedObject].resStringSet .count]];
+        tips = [tips stringByAppendingString:[NSString stringWithFormat:@"%ld strings", [ResourceStringSearcher sharedObject].resStringSet.count]];
     }
     self.statusLabel.stringValue = tips;
     
@@ -461,9 +461,7 @@ static NSString * const kResultIdentifyFilePath    = @"FilePath";
     }
     
     NSNumber *matchSimilar = [ResourceSettings sharedObject].matchSimilarName;
-    if (matchSimilar.boolValue) {
-        [self.ignoreSimilarCheckbox setState:NSOnState];
-    }
+    [self.ignoreSimilarCheckbox setState:matchSimilar.boolValue ? NSOnState : NSOffState];
 }
 
 @end
