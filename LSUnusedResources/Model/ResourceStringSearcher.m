@@ -7,6 +7,7 @@
 //
 
 #import "ResourceStringSearcher.h"
+#import "ResourceFileSearcher.h"
 #import "StringUtils.h"
 
 NSString * const kNotificationResourceStringQueryDone = @"kNotificationResourceStringQueryDone";
@@ -263,6 +264,10 @@ NSString * const kNotificationResourceStringQueryDone = @"kNotificationResourceS
 }
 
 - (BOOL)isDirectory:(NSString *)path {
+    // Ignore x.imageset/Contents.json
+    if ([[ResourceFileSearcher sharedObject] isImageSetFolder:path]) {
+        return NO;
+    }
     BOOL isDirectory;
     return [[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDirectory] && isDirectory;
 }

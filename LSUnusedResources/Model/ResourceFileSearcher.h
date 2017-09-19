@@ -34,4 +34,6 @@ extern NSString * const kNotificationResourceFileQueryDone;
 
 - (void)reset;
 
+- (BOOL)isImageSetFolder:(NSString *)folder;
+
 @end
