@@ -15,7 +15,7 @@ It's an useful utility tool to check what resources are not being used in your X
 
 ## Feature
 
-Check `Ignore similar name` to ignore the resources which referenced by string concatenation.
+Check `Ignore similar name` to ignore the resources which referenced by string concatenation, `regex: ([-_]?\d+)`.
 
 For example:
 
@@ -43,10 +43,10 @@ NSInteger index = random() % 4;
 UIImage *img0 = [UIImage imageNamed:[NSString stringWithFormat:@"icon_tag_%d", index]];
 	
 // Or
-UIImage *img1 = [self createImageWithPrefix:"icon_title" suffix:@"-" andIndex:index];
+UIImage *img1 = [self createImageWithPrefix:@"icon_title" concat:@"-" andIndex:index];
 
 // Or
-UIImage *img2 = [self createImageWithPrefix:"icon_test" andIndex:index];
+UIImage *img2 = [self createImageWithPrefix:@"icon_test" andIndex:index];
 ```
 
 `icon_tag_x.png`, `icon_title-x` and `icon_testx` will be considered to be used, should not be shown as unused resource.
