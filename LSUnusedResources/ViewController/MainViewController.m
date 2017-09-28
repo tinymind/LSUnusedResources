@@ -65,7 +65,8 @@ static NSString * const kResultIdentifyFilePath    = @"FilePath";
     
     [self setupSettings];
     
-    // Setup double click
+    // Setup tableview click action
+    [self.resultsTableView setAction:@selector(onResultsTableViewSingleClicked)];
     [self.resultsTableView setDoubleAction:@selector(onResultsTableViewDoubleClicked)];
     self.resultsTableView.allowsEmptySelection = YES;
     self.resultsTableView.allowsMultipleSelection = YES;
@@ -210,6 +211,17 @@ static NSString * const kResultIdentifyFilePath    = @"FilePath";
 - (IBAction)onAddPatternButtonClicked:(id)sender {
     [[ResourceSettings sharedObject] addResourcePattern:[[ResourceStringSearcher sharedObject] createEmptyResourcePattern]];
     [self.patternTableView reloadData];
+}
+
+- (void)onResultsTableViewSingleClicked {
+    // Copy to pasteboard
+    NSInteger index = [self.resultsTableView clickedRow];
+    if (self.unusedResults.count == 0 || index >= self.unusedResults.count) {
+        return;
+    }
+    ResourceFileInfo *info = [self.unusedResults objectAtIndex:index];
+    [[NSPasteboard generalPasteboard] clearContents];
+    [[NSPasteboard generalPasteboard] setString:info.name forType:NSStringPboardType];
 }
 
 - (void)onResultsTableViewDoubleClicked {
@@ -378,7 +390,7 @@ static NSString * const kResultIdentifyFilePath    = @"FilePath";
     for(ResourceFileInfo *info in self.unusedResults){
         totalSize += info.fileSize;
     }
-    self.statusLabel.stringValue = [NSString stringWithFormat:@"unsued: %ld, time: %.2fs, size: %.2f KB", (long)count, time, (long)totalSize / 1024.0];
+    self.statusLabel.stringValue = [NSString stringWithFormat:@"Total: %ld, unsued: %ld, time: %.2fs, size: %.2f KB", [[ResourceFileSearcher sharedObject].resNameInfoDict allKeys].count, (long)count, time, (long)totalSize / 1024.0];
 }
 
 - (void)searchUnusedResourcesIfNeeded {

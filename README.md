@@ -11,7 +11,7 @@ It's an useful utility tool to check what resources are not being used in your X
 
 1. Click `Browse..` to select a project folder.
 2. Click `Search` to start searching.
-3. Wait a second, the results will be shown in the tableview.
+3. Wait a few seconds, the results will be shown in the tableview.
 
 ## Feature
 
@@ -26,16 +26,30 @@ icon_tag_0.png
 icon_tag_1.png
 icon_tag_2.png
 icon_tag_3.png
+
+icon_title-0.png
+icon_title-1.png
+icon_title-2.png
+
+icon_test0.png
+icon_test1.png
+icon_test2.png
 ```
 
 And using in this way:
 
-```
-	NSInteger index = random() % 4;
-	UIImage *img = [UIImage imageNamed:[NSString stringWithFormat:@"icon_tag_%d", index]];
+``` objc
+NSInteger index = random() % 4;
+UIImage *img0 = [UIImage imageNamed:[NSString stringWithFormat:@"icon_tag_%d", index]];
+	
+// Or
+UIImage *img1 = [self createImageWithPrefix:"icon_title" suffix:@"-" andIndex:index];
+
+// Or
+UIImage *img2 = [self createImageWithPrefix:"icon_test" andIndex:index];
 ```
 
-`icon_tag_x.png` should not be shown as unused resource, we should ignore them.
+`icon_tag_x.png`, `icon_title-x` and `icon_testx` will be considered to be used, should not be shown as unused resource.
 
 ## Installation
 

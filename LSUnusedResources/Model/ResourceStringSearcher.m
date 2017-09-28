@@ -95,7 +95,7 @@ NSString * const kNotificationResourceStringQueryDone = @"kNotificationResourceS
 }
 
 - (BOOL)containsSimilarResourceName:(NSString *)name {
-    NSString *regexStr = @"(\\d+)";
+    NSString *regexStr = @"([-_]?\\d+)";
     NSRegularExpression* regexExpression = [NSRegularExpression regularExpressionWithPattern:regexStr options:NSRegularExpressionCaseInsensitive error:nil];
     NSArray* matchs = [regexExpression matchesInString:name options:0 range:NSMakeRange(0, name.length)];
     if (matchs != nil && [matchs count] == 1) {

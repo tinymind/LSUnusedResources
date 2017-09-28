@@ -872,11 +872,13 @@
                                         </tableHeaderView>
                                     </scrollView>
                                     <button misplaced="YES" id="ty7-Lh-GkV">
-                                        <rect key="frame" x="10" y="7" width="451" height="18"/>
+                                        <rect key="frame" x="10" y="3" width="451" height="24"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                        <buttonCell key="cell" type="check" title="Ignore similar name (eg: &quot;icon_tag_1.png&quot;, using with &quot;icon_tag_%d&quot; )" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="gdO-HM-LlZ">
+                                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="gdO-HM-LlZ">
                                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                            <font key="font" metaFont="system"/>
+                                            <string key="title">Ignore similar name (eg: tag_1.png, using with "tag_%d" or "tag" 
+will be considered to be used )</string>
+                                            <font key="font" metaFont="system" size="11"/>
                                         </buttonCell>
                                         <connections>
                                             <action selector="onIgnoreSimilarCheckboxClicked:" target="XfG-lQ-9wD" id="HHq-fT-Fmg"/>
@@ -930,7 +932,7 @@
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                 </tableColumn>
                                                 <tableColumn identifier="FileName" editable="NO" width="200" minWidth="200" maxWidth="1000" id="60s-SD-XRC">
-                                                    <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Name">
+                                                    <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Name (Click to Copy)">
                                                         <font key="font" metaFont="smallSystem"/>
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="backgroundColor" white="0.33333298560000002" alpha="1" colorSpace="calibratedWhite"/>
@@ -943,7 +945,7 @@
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                 </tableColumn>
                                                 <tableColumn identifier="FileSize" width="64" minWidth="10" maxWidth="3.4028234663852886e+38" id="trL-iQ-pxU">
-                                                    <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Size(KB)">
+                                                    <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Size (KB)">
                                                         <font key="font" metaFont="smallSystem"/>
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
@@ -956,7 +958,7 @@
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                 </tableColumn>
                                                 <tableColumn identifier="FilePath" editable="NO" width="1000" minWidth="40" maxWidth="1000" id="iry-Wq-tlB">
-                                                    <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Full Path">
+                                                    <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Full Path (Double Click to Open)">
                                                         <font key="font" metaFont="smallSystem"/>
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="backgroundColor" white="0.33333298560000002" alpha="1" colorSpace="calibratedWhite"/>

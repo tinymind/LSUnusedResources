@@ -31,7 +31,7 @@
     // Using with similar PNG name
     UIImage *image3 = [UIImage imageNamed:@"folder"];
     image3 = [UIImage imageNamed:[NSString stringWithFormat:@"folder_%d", 1]];
-    image3 = [UIImage imageNamed:[NSString stringWithFormat:@"folder_%d", 2]];
+    image3 = [UIImage imageNamed:@"icon_apple"];
 }
 
 
