@@ -152,7 +152,7 @@ NSString * const kNotificationResourceStringQueryDone = @"kNotificationResourceS
     NSArray *filePatterns = @[cPattern,    // .h
                               ojbcPattern, // .m
                               ojbcPattern, // .mm
-                              ojbcPattern, // swift.
+                              @"\"(.+?)\"",// swift.
                               xibPattern,  // .xib
                               xibPattern,  // .storyboard
                               @"=\\s*\"(.+)\"\\s*;",  // .strings
