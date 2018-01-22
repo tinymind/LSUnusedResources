@@ -56,6 +56,12 @@ UIImage *img2 = [self createImageWithPrefix:@"icon_test" andIndex:index];
 * Download: [LSUnusedResources.app.zip](https://github.com/tinymind/LSUnusedResources/raw/master/Release/LSUnusedResources.app.zip)
 * Or build and run the project using XCode.
 
+## How it works
+
+1. Get resource files (default: `[imageset, jpg, png, gif]`) in these folders `[imageset, launchimage, appiconset, bundle, png]`.
+2. Use regex to search all string names in code files (default: `[h, m, mm, swift, xib, storyboard, strings, c, cpp, html, js, json, plist, css]`).
+3. Exclude all used string names from resources files, we get all unused resources files.
+
 ## Requirements
 
 Requires OS X 10.7 and above, ARC.
