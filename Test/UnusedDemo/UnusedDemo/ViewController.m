@@ -26,7 +26,7 @@
     // Using with PNG name
     UIImage *image2 = [UIImage imageNamed:@"dislike"];
     image2 = [UIImage imageNamed:@"download"];
-    image2 = [UIImage imageNamed:@"garbage"];
+    [self updateButtonWithNormalImage:@"" selectImage:@"garbage"];
     
     // Using with similar PNG name
     UIImage *image3 = [UIImage imageNamed:@"folder"];
@@ -40,5 +40,9 @@
     // Dispose of any resources that can be recreated.
 }
 
+
+- (void)updateButtonWithNormalImage:(NSString *)normalImage selectImage:(NSString *)selectImage {
+    
+}
 
 @end

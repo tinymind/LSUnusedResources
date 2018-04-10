@@ -467,10 +467,10 @@ static NSString * const kResultIdentifyFilePath    = @"FilePath";
     [self.resSuffixTextField setStringValue:[resSuffixs componentsJoinedByString:kDefaultResourceSeparator]];
     
     NSArray *resPatterns = [self resourcePatterns];
-    if (!resPatterns.count) {
+//    if (!resPatterns.count) {
         resPatterns = [[ResourceStringSearcher sharedObject] createDefaultResourcePatternsWithResourceSuffixs:resSuffixs];
         [ResourceSettings sharedObject].resourcePatterns = resPatterns;
-    }
+//    }
     
     NSNumber *matchSimilar = [ResourceSettings sharedObject].matchSimilarName;
     [self.ignoreSimilarCheckbox setState:matchSimilar.boolValue ? NSOnState : NSOffState];

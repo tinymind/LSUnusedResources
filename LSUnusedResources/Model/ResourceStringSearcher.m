@@ -12,6 +12,11 @@
 
 NSString * const kNotificationResourceStringQueryDone = @"kNotificationResourceStringQueryDone";
 
+static NSString * const kPatternIdentifyEnable      = @"PatternEnable";
+static NSString * const kPatternIdentifySuffix      = @"PatternSuffix";
+static NSString * const kPatternIdentifyRegex       = @"PatternRegex";
+static NSString * const kPatternIdentifyGroupIndex  = @"PatternGroupIndex";
+
 #pragma mark - ResourceStringPattern
 
 @implementation ResourceStringPattern
@@ -69,8 +74,9 @@ NSString * const kNotificationResourceStringQueryDone = @"kNotificationResourceS
     
     self.fileSuffixToResourcePatterns = [NSMutableDictionary dictionary];
     for (NSDictionary *dict in resourcePatterns) {
-        if ([dict[kPatternIdentifyEnable] boolValue]) {
-            [self.fileSuffixToResourcePatterns setObject:dict forKey:dict[kPatternIdentifySuffix]];
+        ResourceStringPattern *pattern = [[ResourceStringPattern alloc] initWithDictionary:dict];
+        if (pattern.enable) {
+            [self.fileSuffixToResourcePatterns setObject:pattern forKey:pattern.suffix];
         }
     }
     
@@ -145,23 +151,23 @@ NSString * const kNotificationResourceStringQueryDone = @"kNotificationResourceS
     NSArray *enables = @[@1, @1, @1, @1, @1, @1, @1, @1, @1, @1, @1, @1, @1, @1];
     NSArray *fileSuffixs = @[@"h", @"m", @"mm", @"swift", @"xib", @"storyboard", @"strings", @"c", @"cpp", @"html", @"js", @"json", @"plist", @"css"];
     
-    NSString *cPattern = [NSString stringWithFormat:@"([a-zA-Z0-9_-]+)\\.(%@)", [resSuffixs componentsJoinedByString:@"|"]]; // *.(png|gif|jpg|jpeg)
-    NSString *ojbcPattern = @"@\"(.+?)\""; // @"imageNamed:@\"(.+)\"";//or: (imageNamed|contentOfFile):@\"(.*)\" // http://www.raywenderlich.com/30288/nsregularexpression-tutorial-and-cheat-sheet
+    NSString *cPattern = [NSString stringWithFormat:@"([a-zA-Z0-9_-]*)\\.(%@)", [resSuffixs componentsJoinedByString:@"|"]]; // *.(png|gif|jpg|jpeg)
+    NSString *ojbcPattern = @"@\"(.*?)\""; // @"imageNamed:@\"(.+)\"";//or: (imageNamed|contentOfFile):@\"(.*)\" // http://www.raywenderlich.com/30288/nsregularexpression-tutorial-and-cheat-sheet
     NSString *xibPattern = @"image name=\"(.+?)\""; // image name="xx"
     
     NSArray *filePatterns = @[cPattern,    // .h
                               ojbcPattern, // .m
                               ojbcPattern, // .mm
-                              @"\"(.+?)\"",// swift.
+                              @"\"(.*?)\"",// swift.
                               xibPattern,  // .xib
                               xibPattern,  // .storyboard
-                              @"=\\s*\"(.+)\"\\s*;",  // .strings
+                              @"=\\s*\"(.*)\"\\s*;",  // .strings
                               cPattern,    // .c
                               cPattern,    // .cpp
-                              @"img\\s+src=[\"\'](.+?)[\"\']", // .html, <img src="xx"> <img src='xx'>
-                              @"[\"\']src[\"\'],\\s+[\"\'](.+?)[\"\']", // .js,  "src", "xx"> 'src', 'xx'>
-                              @":\\s+\"(.+?)\"", // .json, "xx"
-                              @">(.+?)<",  // .plist, "<string>xx</string>"
+                              @"img\\s+src=[\"\'](.*?)[\"\']", // .html, <img src="xx"> <img src='xx'>
+                              @"[\"\']src[\"\'],\\s+[\"\'](.*?)[\"\']", // .js,  "src", "xx"> 'src', 'xx'>
+                              @":\\s*\"(.*?)\"", // .json, "xx"
+                              @">(.*?)<",  // .plist, "<string>xx</string>"
                               cPattern];   // .css
     
     NSArray *matchGroupIndexs = @[@1, @1, @1, @1, @1, @1, @1, @1, @1, @1, @1, @1, @1, @1];
@@ -219,7 +225,7 @@ NSString * const kNotificationResourceStringQueryDone = @"kNotificationResourceS
             [self handleFilesAtPath:tempPath];
         } else {
             NSString *ext = [[file pathExtension] lowercaseString];
-            NSDictionary *resourcePattern = self.fileSuffixToResourcePatterns[ext];
+            ResourceStringPattern *resourcePattern = self.fileSuffixToResourcePatterns[ext];
             if (!resourcePattern) {
                 continue;
             }
@@ -230,34 +236,33 @@ NSString * const kNotificationResourceStringQueryDone = @"kNotificationResourceS
     return YES;
 }
 
-- (void)parseFileAtPath:(NSString *)path withResourcePattern:(NSDictionary *)resourcePattern {
+- (void)parseFileAtPath:(NSString *)path withResourcePattern:(ResourceStringPattern *)resourcePattern {
     NSString *content = [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:nil];
     if (!content) {
         return;
     }
 
-    NSString *regex = resourcePattern[kPatternIdentifyRegex];
-    NSInteger groupIndex = [resourcePattern[kPatternIdentifyGroupIndex] integerValue];
-    
-    if (regex.length && groupIndex >= 0) {
-        NSArray *list = [self getMatchStringWithContent:content pattern:regex groupIndex:groupIndex];
-        [self.resStringSet addObjectsFromArray:list];
+    if (resourcePattern.regex.length && resourcePattern.groupIndex >= 0) {
+        NSSet *set = [self getMatchStringWithContent:content pattern:resourcePattern.regex groupIndex:resourcePattern.groupIndex];
+        [self.resStringSet unionSet:set];
     }
 }
 
-- (NSArray *)getMatchStringWithContent:(NSString *)content pattern:(NSString*)pattern groupIndex:(NSInteger)index {
-    NSRegularExpression* regexExpression = [NSRegularExpression regularExpressionWithPattern:pattern options:NSRegularExpressionCaseInsensitive error:nil];
+- (NSSet *)getMatchStringWithContent:(NSString *)content pattern:(NSString*)pattern groupIndex:(NSInteger)index {
+    NSRegularExpression *regexExpression = [NSRegularExpression regularExpressionWithPattern:pattern options:NSRegularExpressionCaseInsensitive error:nil];
     NSArray* matchs = [regexExpression matchesInString:content options:0 range:NSMakeRange(0, content.length)];
     
     if (matchs.count) {
-        NSMutableArray *list = [NSMutableArray array];
+        NSMutableSet *set = [NSMutableSet set];
         for (NSTextCheckingResult *checkingResult in matchs) {
             NSString *res = [content substringWithRange:[checkingResult rangeAtIndex:index]];
-            res = [res lastPathComponent];
-            res = [StringUtils stringByRemoveResourceSuffix:res];
-            [list addObject:res];
+            if (res.length) {
+                res = [res lastPathComponent];
+                res = [StringUtils stringByRemoveResourceSuffix:res];
+                [set addObject:res];
+            }
         }
-        return list;
+        return set;
     }
     
     return nil;

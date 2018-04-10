@@ -10,11 +10,6 @@
 
 extern NSString * const kNotificationResourceStringQueryDone;
 
-static NSString * const kPatternIdentifyEnable      = @"PatternEnable";
-static NSString * const kPatternIdentifySuffix      = @"PatternSuffix";
-static NSString * const kPatternIdentifyRegex       = @"PatternRegex";
-static NSString * const kPatternIdentifyGroupIndex  = @"PatternGroupIndex";
-
 #pragma mark - ResourceStringPattern
 
 @interface ResourceStringPattern : NSObject
