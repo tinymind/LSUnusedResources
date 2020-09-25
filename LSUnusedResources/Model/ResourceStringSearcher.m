@@ -92,6 +92,9 @@ static NSString * const kPatternIdentifyGroupIndex  = @"PatternGroupIndex";
     if ([self.resStringSet containsObject:name]) {
         return YES;
     } else {
+        if ([name hasSuffix:@"_night"]) {
+            return [self containsResourceName:[name stringByReplacingOccurrencesOfString:@"_night" withString:@""]];
+        }
         if ([name pathExtension]) {
             NSString *nameWithoutSuffix = [StringUtils stringByRemoveResourceSuffix:name];
             return [self.resStringSet containsObject:nameWithoutSuffix];
